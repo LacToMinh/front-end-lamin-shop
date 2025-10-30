@@ -1,0 +1,13 @@
+/* app.css */
+@keyframes rotate-once {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-once {
+  animation: rotate-once 1s ease-out 1 forwards;
+}

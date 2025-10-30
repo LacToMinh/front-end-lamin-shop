@@ -1,0 +1,27 @@
+.productItem {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 420px; /* hoặc auto nhưng đặt min-height */
+  min-height: 420px;
+}
+
+/* .productItem .img {
+  height: 260px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+} */
+
+.productItem .img img {
+  object-fit: cover;
+  height: 100%;
+  width: 100%;
+} 
+
+.productItem .info {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}

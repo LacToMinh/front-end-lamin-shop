@@ -1,0 +1,389 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Montserrat", sans-serif;
+  font-optical-sizing: auto;
+}
+
+header {
+  box-shadow: 0px 1px 5px #0000001a;
+}
+
+.container {
+  width: 95%;
+  margin: auto;
+}
+
+.container_2 {
+  width: 78%;
+  margin: auto;
+}
+
+.btn-login .btn-org.MuiButtonBase-root {
+  color: #fff !important;
+}
+
+.btn-org {
+  background-color: #001F5D !important;
+}
+
+.btn-org:hover {
+  /* background-color: #ff5252 !important; */
+  transition: all !important;
+  transition-duration: 300ms !important;
+}
+
+.productItem .btn-org .MuiButton-text {
+  color: #fff !important;
+}
+
+::-webkit-scrollbar {
+  width: 8px !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #001F5D !important;
+  border-radius: 4px;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #fff;
+}
+
+header .top-strip {
+  /* border-top: 1px solid rgb(203, 194, 194); */
+  border-bottom: 1px solid rgb(203, 194, 194);
+}
+
+.link:hover {
+  color: #ff5252;
+  transition: all;
+  transition-duration: 300ms;
+}
+
+.MuiBadge-badge {
+  background-color: rgb(251, 8, 8) !important;
+}
+
+nav button {
+  text-transform: capitalize !important;
+  font-family: "Montserrat", sans-serif !important;
+
+}
+
+a {
+  font-family: "Montserrat", sans-serif !important;
+}
+
+.MuiButtonBase-root {
+  font-family: "Montserrat", sans-serif !important;
+  /* color: #001F5D !important; */
+  transition: all !important;
+}
+
+.rightContent .col1 .MuiButtonBase-root:focus {
+  background: #ff5252 !important;
+}
+
+.MuiCheckbox-root {
+  margin-left: 5px !important;
+  padding: 4px !important;
+}
+
+.swiper-button-prev,
+.swiper-button-next {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fff;
+  border-radius: 100%;
+  width: 45px;
+  height: 45px;
+  min-width: 45px;
+  font-weight: 900 !important;
+}
+
+.swiper-button-prev::after,
+.swiper-button-next::after {
+  font-size: 20px !important;
+  color: #000;
+}
+
+.homeCatSlider {
+  overflow: inherit !important;
+}
+
+.homeCatSlider .swiper-button-prev,
+.homeCatSlider .swiper-button-next {
+  font-weight: 700 !important;
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  margin-top: -1px;
+}
+
+.homeCatSlider .swiper-button-prev::after,
+.homeCatSlider .swiper-button-next::after {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+}
+
+.homeCatSlider .swiper-button-prev {
+  left: 1px !important;
+}
+
+.homeCatSlider .swiper-button-next {
+  right: 1px !important;
+}
+
+.homeCatSlider .item {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.homeCatSlider .swiper-button-prev:hover,
+.homeCatSlider .swiper-button-next:hover {
+  background: #001F5D !important;
+  font-weight: 700 !important;
+}
+
+.homeCatSlider .swiper-button-prev:hover::after,
+.homeCatSlider .swiper-button-next:hover::after {
+  color: #fff !important;
+  font-weight: 700 !important;
+}
+
+.MuiTabs-indicator {
+  background-color: #001F5D !important;
+}
+
+.MuiTab-textColorPrimary {
+  color: #000 !important;
+  font-weight: 600 !important;
+}
+
+.MuiTab-textColorPrimary.Mui-selected {
+  color: #ff5252 !important;
+}
+
+.mySwiperProduct .swiper-wrapper {
+  gap: 20px !important;
+  z-index: 100;
+}
+
+.productsSlider .swiper-button-prev {
+  left: 1px !important;
+}
+
+.productsSlider .swiper-button-next {
+  right: 0px !important;
+}
+
+.productsSlider .swiper-button-prev:hover,
+.productsSlider .swiper-button-next:hover {
+  background: #001F5D !important;
+  font-weight: 700 !important;
+}
+
+.productsSlider .swiper-button-prev:hover::after,
+.productsSlider .swiper-button-next:hover::after {
+  color: #fff !important;
+  font-weight: 700 !important;
+}
+
+.blogSlider .swiper-button-prev {
+  left: 0px !important;
+  top: 40% !important;
+}
+
+.blogSlider .swiper-button-next {
+  top: 40% !important;
+  right: 0px !important;
+}
+
+.blogSlider .swiper-button-prev:hover,
+.blogSlider .swiper-button-next:hover {
+  background: #001F5D !important;
+  font-weight: 700 !important;
+}
+
+.blogSlider .swiper-button-prev:hover::after,
+.blogSlider .swiper-button-next:hover::after {
+  color: #fff !important;
+  font-weight: 700 !important;
+}
+
+.colScroll {
+  /* margin-left: -17px !important; */
+}
+
+.iconCollapse {
+  right: 44px !important;
+}
+
+.rightContent .MuiButtonBase-root {
+  color: #000 !important;
+}
+
+.rightContent .col2 .MuiButton-text {
+  color: white !important;
+}
+
+.Mui-selected.MuiPaginationItem-page {
+  background-color: #001F5D !important;
+  color: #fff !important;
+}
+
+/* .zoomProductSliderThumbs {
+  height: 65vh;
+  overflow: hidden;
+} */
+
+input::-ms-reveal,
+input::-ms-clear {
+  display: none;
+}
+
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-clear-button,
+input[type="password"]::-webkit-inner-spin-button,
+input[type="password"]::-webkit-outer-spin-button {
+  display: none;
+}
+
+.btn-gg.MuiButtonBase-root {
+  color: #000 !important;
+}
+
+.cartPanel .MuiPaper-root {
+  width: 500px;
+}
+
+#size-menu .MuiButtonBase-root {
+  color: #000 !important;
+  font-size: 14px !important;
+}
+
+.otpBox input {
+  border: 1px solid rgba(0, 0, 0, 0.3) !important;
+  outline: none !important;
+  border-radius: 4px;
+}
+
+.otpBox input:focus {
+  border: 1px solid rgba(0, 0, 0, 0.7) !important;
+}
+
+.otpPage .container {
+  height: 90vh;
+  display: flex;
+}
+
+.myAccountTabs li a {
+  position: relative;
+  display: block;
+  padding: 0px;
+}
+
+.myAccountTabs li a::before {
+  content: "";
+  width: 4px;
+  height: 50%;
+  position: absolute;
+  opacity: 0;
+  top: 50%;
+  left: 0px;
+  background: #ff5252;
+  transition: all 0.3s ease-in-out;
+  border-bottom-right-radius: 5px;
+  border-top-right-radius: 5px;
+}
+
+.myAccountTabs li a.active::before {
+  height: 100%;
+  opacity: 1;
+  top: 0;
+}
+
+.myAccountTabs li a.active button svg {
+  color: #ff5252 !important;
+  opacity: 1 !important;
+}
+
+.cart-remove-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 100%;
+  position: absolute;
+  right: -10px;
+  top: -50px;
+  z-index: 1;
+}
+
+.icon {
+  font-size: 28px !important;
+  color: #222;
+  pointer-events: none;
+  /* Để click vào icon cũng là click button */
+  transition: color 0.2s;
+}
+
+.remove-btn:hover .icon {
+  color: #e91717 !important;
+}
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-8px);} to { opacity: 1; transform: none;}}
+.animate-fade-in { animation: fadeIn 0.3s;}
+
+@keyframes spinOnce {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Lớp xoay */
+.circle-spinner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 6px solid #0b7d35;
+  border-top-color: transparent;
+  animation: spinOnce 1s ease-in-out forwards;
+  position: absolute;
+  inset: 0;
+}
+
+/* Lớp giữ nguyên sau quay */
+.circle-static {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 6px solid #16aa4d;
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  animation: fadeIn 0.1s ease-in-out 1s forwards; /* hiện ra sau khi quay xong */
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+
+
+
