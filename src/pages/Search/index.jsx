@@ -36,6 +36,7 @@ const SearchPage = () => {
   const handleClose = () => setAnchorEl(null);
 
   useEffect(() => {
+    window.scrollTo(0,0);
     const controller = new AbortController();
 
     const fetchProducts = async () => {

@@ -363,6 +363,51 @@ const Checkout = () => {
     }
   };
 
+  const vnpayCheckout = async () => {
+    if (!selectedValue) {
+      context.alertBox("error", "Vui lòng chọn địa chỉ giao hàng");
+      return;
+    }
+
+    try {
+      const user = context?.userData;
+
+      const payload = {
+        user: user?._id,
+        products: context?.cartData?.map((item) => ({
+          productId: item._id,
+          productTitle: item.productTitle,
+          quantity: item.quantity,
+          price: item.price,
+          image: item.image,
+          subTotal: item.price * item.quantity,
+        })),
+        delivery_address: selectedValue,
+        totalAmt: totalAmount,
+        amount: totalAmount,
+        paymentMethod: "VNPAY",
+        orderDescription: "Thanh toán đơn hàng tại Lạc Tố Minh Store", // ✅ mới thêm
+        orderType: "other", // ✅ theo mẫu VNPay
+      };
+
+      const res = await postData("/api/vnpay/create-payment", payload);
+
+      if (res && res?.payUrl) {
+        await deleteData(`/api/cart/emptyCart/${user._id}`);
+        context.getCartItems();
+        window.location.href = res.payUrl;
+      } else {
+        context.alertBox(
+          "error",
+          res?.message || "Không thể tạo thanh toán VNPay"
+        );
+      }
+    } catch (err) {
+      console.error("VNPay Checkout Error:", err);
+      context.alertBox("error", "Đã xảy ra lỗi khi thanh toán với VNPay");
+    }
+  };
+
   return (
     <>
       <section className="py-10">

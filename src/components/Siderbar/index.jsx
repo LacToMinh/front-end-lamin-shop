@@ -35,13 +35,16 @@ const Sidebar = (props) => {
   const [price, setPrice] = useState([0, 600]);
   const filterData = () => {
     props.setIsLoading(true);
-    console.log(context?.searchData);
-    if(context?.searchData?.length > 0 ) {
-      props.setSearchData(context?.searchData)
+    // console.log(context?.searchData);
+    if (context?.searchData?.data?.length > 0) {
+      props.setProductData(context?.searchData);
+      props.setIsLoading(false);
+      props.setTotalPages(context?.searchData?.totalPages);
+      window.scrollTo(0, 0);
     }
 
     postData(`/api/product/filter`, filter).then((res) => {
-      console.log("API Response:", res);
+      // console.log("API Response:", res);
       props.setProductData(res.data);
       props.setIsLoading(false);
       props.setTotalPages(res?.totalPages);
@@ -59,26 +62,33 @@ const Sidebar = (props) => {
       const categoryId = queryParameters.get("catId");
       const catArr = [];
       catArr.push(categoryId);
-      updatedFilter.catId = [categoryId];
+      updatedFilter.catId = catArr;
       updatedFilter.subCatId = [];
       updatedFilter.thirdSubCatId = [];
       updatedFilter.rating = [];
+      context?.setSearchData([]);
     }
 
     if (url.includes("subCatId")) {
       const subCategoryId = queryParameters.get("subCatId");
-      updatedFilter.subCatId = [subCategoryId];
+      const subCatArr = [];
+      subCatArr.push(subCategoryId)
+      updatedFilter.subCatId = subCatArr;
       updatedFilter.catId = [];
       updatedFilter.thirdSubCatId = [];
       updatedFilter.rating = [];
+      context?.setSearchData([]);
     }
 
     if (url.includes("thirdSubCatId")) {
       const thirdSubCatId = queryParameters.get("thirdSubCatId");
-      updatedFilter.thirdSubCatId = [thirdSubCatId];
+      const thirdCatArr = [];
+      thirdCatArr.push(thirdSubCatId)
+      updatedFilter.thirdSubCatId = thirdCatArr;
       updatedFilter.catId = [];
       updatedFilter.subCatId = [];
       updatedFilter.rating = [];
+      context?.setSearchData([]);
     }
 
     // reset page về 1 khi filter mới
@@ -94,6 +104,8 @@ const Sidebar = (props) => {
   }, [location]);
 
   const handleCheckboxChange = (field, value) => {
+    context?.setSearchData([]);
+
     const currentValues = filter[field] || [];
     const updatedValues = currentValues?.includes(value)
       ? currentValues.filter((item) => item !== value)
