@@ -29,6 +29,7 @@ import OrderSuccess from "./pages/Orders/success";
 import Orders from "./pages/Orders";
 import TryOnPage from "./pages/TryOn";
 import SearchPage from "./pages/Search";
+import ChatBox from "./pages/Chat";
 
 const alertBox = ({ status, msg }) => {
   if (status === "success") toast.success(msg);
@@ -50,7 +51,8 @@ function App() {
   const [catData, setCatData] = useState([]);
   const [cartData, setCartData] = useState([]);
   const [justLoggedOut, setJustLoggedOut] = useState(false);
-  const [searchData, setSearchData] = useState([])
+  const [searchData, setSearchData] = useState([]);
+  const [isSearchMode, setIsSearchMode] = useState(false);
 
   // const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -162,7 +164,6 @@ function App() {
     setOpenProductDetailsModal,
     handleOpenProductDetailsModal,
     handleCloseProductDetailsModal,
-    // setOpenProductDetailsModal,
     setOpenCartPanel,
     toggleCartPanel,
     isLogin,
@@ -179,7 +180,9 @@ function App() {
     setCartData,
     getCartItems,
     searchData,
-    setSearchData
+    setSearchData,
+    isSearchMode,
+    setIsSearchMode,
   };
   return (
     <>
@@ -211,6 +214,7 @@ function App() {
           <Route path={"/address"} element={<Address />} />
           <Route path={"/try-on"} element={<TryOnPage />} />
           <Route path={"/search"} element={<SearchPage />} />
+          <Route path={"/chat"} element={<ChatBox />} />
         </Routes>
         <Footer />
 
@@ -256,38 +260,58 @@ function App() {
           open={openCartPanel}
           onClose={toggleCartPanel(false)}
           anchor="right"
-          transitionDuration={300}
-          className="cartPanel"
+          transitionDuration={400}
+          PaperProps={{
+            sx: {
+              width: "420px",
+              // background: "rgba(255, 255, 255, 0.7)",
+              backdropFilter: "blur(20px)",
+              borderLeft: "1px solid rgba(255, 255, 255, 0.2)",
+              boxShadow: "0 0 25px rgba(0, 0, 0, 0.15)",
+              // borderRadius: "12px 0 0 12px",
+              overflow: "hidden",
+            },
+          }}
         >
-          <div className="flex items-center justify-between py-1 px-4 gap-3 border-b border-[rgba(0,0,0,0.5)]">
-            <h4 className="text-[20px] font-bold pl-2">
-              Giỏ hàng ({cartData?.length})
+          {/* Header */}
+          <div className="flex items-center justify-between py-3 px-5 border-b border-[rgba(0,0,0,0.1)] bg-white/60 backdrop-blur-sm">
+            <h4 className="text-[20px] font-semibold text-[#001F5D] flex items-center gap-2">
+              🛒 Giỏ hàng{" "}
+              <span className="text-gray-500 font-medium">
+                ({cartData?.length})
+              </span>
             </h4>
-            <Button className="!w-[55px] !h-[55px] !min-w-[55px] !mr-[-8px]">
-              <IoCloseSharp
-                className="!text-[45px] cursor-pointer text-black"
-                onClick={toggleCartPanel(false)}
-              />
+            <Button
+              className="!w-[44px] !h-[44px] !min-w-[44px] !rounded-full hover:!bg-[#001F5D]/10 transition-all duration-300"
+              onClick={toggleCartPanel(false)}
+            >
+              <IoCloseSharp className="!text-[28px] text-[#001F5D]" />
             </Button>
           </div>
 
+          {/* Content */}
           {cartData?.length !== 0 ? (
             <CartPanel data={cartData} />
           ) : (
-            <>
-              <div className="flex items-center justify-center flex-col pt-40">
-                <img src="/empty-cart.png" className="w-[300px]" alt="" />
-                <h4 className="font-semibold">
-                  Giỏ hàng của bạn hiện không có sản phẩm nào!
-                </h4>
-                <Button
-                  className="!mt-3 !bg-blue-700 hover:!bg-blue-800 !text-white !font-bold"
-                  onClick={toggleCartPanel(false)}
-                >
-                  <span className="text-white">Tiếp tục mua sắm</span>
-                </Button>
-              </div>
-            </>
+            <div className="flex flex-col items-center justify-center py-20 px-5 text-center">
+              <img
+                src="/empty-cart.png"
+                alt="Empty Cart"
+                className="w-[220px] opacity-90 mb-4"
+              />
+              <h4 className="text-[18px] font-semibold text-gray-800">
+                Giỏ hàng của bạn đang trống!
+              </h4>
+              <p className="text-gray-500 text-[14px] mt-1">
+                Hãy chọn vài sản phẩm yêu thích để bắt đầu nhé 💙
+              </p>
+              <Button
+                onClick={toggleCartPanel(false)}
+                className="!mt-5 !bg-[#001F5D] hover:!bg-[#001F5D]/90 !text-white !font-semibold !rounded-full !px-6 !py-2 !text-[15px] shadow-[0_3px_12px_rgba(0,31,93,0.25)]"
+              >
+                Tiếp tục mua sắm
+              </Button>
+            </div>
           )}
         </Drawer>
       </MyContext.Provider>

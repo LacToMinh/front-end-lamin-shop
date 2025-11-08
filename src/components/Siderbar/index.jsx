@@ -14,12 +14,18 @@ import Rating from "@mui/material/Rating";
 import { useContext } from "react";
 import { MyContext } from "../../App";
 import { postData } from "../../utils/api";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useRef } from "react";
 
 const Sidebar = (props) => {
   const [isOpenCategoryFilter, setIsOpenCategoryFilter] = useState(true);
   const [isOpenAvailFilter, setIsOpenAvailFilter] = useState(true);
   const [isOpenSizeFilter, setIsOpenSizeFilter] = useState(true);
   const context = useContext(MyContext);
+  const location = useLocation(); // ✅ đúng cách
+  const [price, setPrice] = useState([0, 600]);
+  const didMountRef = useRef(false);
+  const sidebarRef = useRef(null);
 
   const [filter, setFilter] = useState({
     catId: [],
@@ -27,327 +33,371 @@ const Sidebar = (props) => {
     thirdSubCatId: [],
     minPrice: "",
     maxPrice: "",
-    rating: "",
+    rating: [],
     page: 1,
     limit: 5,
   });
 
-  const [price, setPrice] = useState([0, 600]);
-  const filterData = () => {
-    props.setIsLoading(true);
-    // console.log(context?.searchData);
-    if (context?.searchData?.data?.length > 0) {
-      props.setProductData(context?.searchData);
+  const navigate = useNavigate();
+
+  // ✅ Chỉ gọi khi người dùng chọn filter hoặc url thay đổi
+  const filterData = async () => {
+    try {
+      props.setIsLoading(true);
+
+      // Nếu đang search, không gọi filter
+      if (context?.isSearchMode || context?.searchData?.data?.length > 0) {
+        props.setProductData(context.searchData.data);
+        props.setTotalPages(context.searchData.totalPages || 1);
+        props.setIsLoading(false);
+        return;
+      }
+
+      const res = await postData(`/api/product/filter`, filter);
+      props.setProductData(res?.data || []);
+      props.setTotalPages(res?.totalPages || 1);
+    } catch (err) {
+      console.error("Filter fetch failed:", err);
+    } finally {
       props.setIsLoading(false);
-      props.setTotalPages(context?.searchData?.totalPages);
       window.scrollTo(0, 0);
     }
-
-    postData(`/api/product/filter`, filter).then((res) => {
-      // console.log("API Response:", res);
-      props.setProductData(res.data);
-      props.setIsLoading(false);
-      props.setTotalPages(res?.totalPages);
-      window.scrollTo(0, 0);
-    });
   };
+
+  // ✅ Khi URL đổi → set catId/subCatId/thirdSubCatId tương ứng, KHÔNG gọi API liên tục
   useEffect(() => {
-    const url = window.location.href;
     const queryParameters = new URLSearchParams(location.search);
+    const updatedFilter = { ...filter, page: 1 };
 
-    // Sao chép state filter hiện tại
-    const updatedFilter = { ...filter };
+    if (location.search.includes("catId")) {
+      const catIdParam = queryParameters.get("catId");
 
-    if (url.includes("catId")) {
-      const categoryId = queryParameters.get("catId");
-      const catArr = [];
-      catArr.push(categoryId);
-      updatedFilter.catId = catArr;
+      // ✅ nếu có nhiều id ngăn cách bằng dấu phẩy → tách thành mảng
+      updatedFilter.catId = catIdParam ? catIdParam.split(",") : [];
+
       updatedFilter.subCatId = [];
       updatedFilter.thirdSubCatId = [];
       updatedFilter.rating = [];
-      context?.setSearchData([]);
-    }
-
-    if (url.includes("subCatId")) {
-      const subCategoryId = queryParameters.get("subCatId");
-      const subCatArr = [];
-      subCatArr.push(subCategoryId)
-      updatedFilter.subCatId = subCatArr;
+      context.setSearchData([]);
+    } else if (location.search.includes("subCatId")) {
+      updatedFilter.subCatId = [queryParameters.get("subCatId")];
       updatedFilter.catId = [];
       updatedFilter.thirdSubCatId = [];
       updatedFilter.rating = [];
-      context?.setSearchData([]);
-    }
-
-    if (url.includes("thirdSubCatId")) {
-      const thirdSubCatId = queryParameters.get("thirdSubCatId");
-      const thirdCatArr = [];
-      thirdCatArr.push(thirdSubCatId)
-      updatedFilter.thirdSubCatId = thirdCatArr;
+      context.setSearchData([]);
+    } else if (location.search.includes("thirdSubCatId")) {
+      updatedFilter.thirdSubCatId = [queryParameters.get("thirdSubCatId")];
       updatedFilter.catId = [];
       updatedFilter.subCatId = [];
       updatedFilter.rating = [];
-      context?.setSearchData([]);
+      context.setSearchData([]);
     }
 
-    // reset page về 1 khi filter mới
-    updatedFilter.page = 1;
-
-    // cập nhật state filter
     setFilter(updatedFilter);
+  }, [location.search]);
 
-    // gọi API sau 200ms
-    setTimeout(() => {
+  // ✅ Tự động gọi API khi filter thay đổi (chỉ khi có điều kiện hợp lệ)
+  useEffect(() => {
+    // Không có filter nào => bỏ qua
+    if (
+      !filter.catId.length &&
+      !filter.subCatId.length &&
+      !filter.thirdSubCatId.length &&
+      !filter.rating.length &&
+      !filter.minPrice &&
+      !filter.maxPrice
+    )
+      return;
+
+    // 🔹 Chặn lần mount đầu tiên (StrictMode render double)
+    if (!didMountRef.current) {
+      didMountRef.current = true;
+      return;
+    }
+
+    // 🔹 Nếu URL vừa đổi (vd: /?catId=...) thì đừng gọi API filter ngay
+    if (
+      location.search.includes("catId") ||
+      location.search.includes("subCatId") ||
+      location.search.includes("thirdSubCatId")
+    )
+      return;
+
+    // 🔹 Gọi API filter có debounce để UI mượt
+    const timeout = setTimeout(() => {
+      console.log("🔥 Gọi API filter với:", filter);
       filterData();
-    }, 200);
-  }, [location]);
+    }, 300);
 
-  const handleCheckboxChange = (field, value) => {
-    context?.setSearchData([]);
+    return () => clearTimeout(timeout);
+  }, [filter]);
 
-    const currentValues = filter[field] || [];
-    const updatedValues = currentValues?.includes(value)
-      ? currentValues.filter((item) => item !== value)
-      : [...currentValues, value];
-
-    setFilter((prev) => ({
-      ...prev,
-      [field]: updatedValues,
-    }));
-
-    if (field === "catId") {
+  // ✅ Gọi khi người dùng click chọn filter, không tự chạy liên tục
+  useEffect(() => {
+    const timeout = setTimeout(() => {
       setFilter((prev) => ({
         ...prev,
-        subCatId: [],
-        thirdSubCatId: [],
+        minPrice: price[0],
+        maxPrice: price[1],
       }));
-    }
-  };
-
-  useEffect(() => {
-    console.log("Current filter:", filter);
-    filter.page = props.page;
-    filterData();
-  }, [filter, props.page]);
-
-  useEffect(() => {
-    setFilter((prev) => ({
-      ...prev,
-      minPrice: price[0],
-      maxPrice: price[1],
-    }));
+    }, 300);
+    return () => clearTimeout(timeout);
   }, [price]);
 
+  const handleCheckboxChange = (field, value) => {
+    context.setIsSearchMode(false);
+
+    setFilter((prev) => {
+      const currentValues = prev[field] || [];
+      const updatedValues = currentValues.includes(value)
+        ? currentValues.filter((item) => item !== value)
+        : [...currentValues, value];
+
+      // ✅ Cập nhật URL mỗi khi tick
+      const params = new URLSearchParams();
+      if (updatedValues.length > 0) {
+        params.set("catId", updatedValues.join(",")); // nhiều id cách nhau bằng dấu phẩy
+      }
+      navigate(`?${params.toString()}`, { replace: true });
+
+      return { ...prev, [field]: updatedValues, page: 1 };
+    });
+  };
+
+  const handleApplyFilters = () => {
+    filterData(); // ✅ chỉ chạy khi nhấn nút
+  };
+
+  // 💡 Cập nhật vị trí gradient theo chuột
+  const handleMouseMove = (e) => {
+    const sidebar = sidebarRef.current;
+    if (!sidebar) return;
+    const rect = sidebar.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    sidebar.style.setProperty("--x", `${x}%`);
+    sidebar.style.setProperty("--y", `${y}%`);
+  };
+
   return (
-    <aside className="sidebar py-0 bg-[#F8F8F8]">
-      {console.log(filter)}
-      <div className="box mb-3">
-        <h3 className="text-[16px] font-semibold flex items-center w-full">
+    <aside
+      ref={sidebarRef}
+      onMouseMove={handleMouseMove}
+      className="sidebar relative rounded-sm p-4 border border-white/30 
+      shadow-[0_4px_30px_rgba(0,0,0,0.1)] bg-white/10 backdrop-blur-md 
+      text-sm transition-all duration-300"
+    >
+      {/* Ánh sáng phản chiếu nhẹ */}
+      <div className="absolute inset-0 rounded-2xl border border-white/20 pointer-events-none"></div>
+
+      {/* DANH MỤC */}
+      <div className="box mb-4 relative z-10">
+        <h3 className="flex items-center justify-between text-[15px] font-semibold text-gray-900 mb-1">
           Danh mục
           <Button
-            className="!ml-1 !w-[40px] !min-w-[40px] !h-[40px] !rounded-full"
+            className="!ml-1 !w-8 !h-8 !min-w-0 !rounded-full !p-0 hover:!bg-white/20"
             onClick={() => setIsOpenCategoryFilter(!isOpenCategoryFilter)}
           >
-            {isOpenCategoryFilter === true ? (
-              <FaAngleUp className="text-[20px]" />
+            {isOpenCategoryFilter ? (
+              <FaAngleUp className="text-[18px] text-gray-700" />
             ) : (
-              <FaAngleDown className="text-[20px]" />
+              <FaAngleDown className="text-[18px] text-gray-700" />
             )}
           </Button>
         </h3>
-        {/* <CategoryCollapse className="!ml-[-200px] !capitalize"/> */}
+
         <Collapse isOpened={isOpenCategoryFilter}>
-          <div className="scroll">
-            {context?.catData.length !== 0 &&
-              context?.catData.map((item, index) => {
-                return (
-                  <FormControlLabel
-                    key={index}
-                    value={item?._id}
-                    control={<Checkbox size="small" />}
-                    checked={filter?.catId?.includes(item?._id)}
-                    label={item?.name}
-                    onChange={() => handleCheckboxChange("catId", item?._id)}
-                    className="w-full"
+          <div className="sidebar  scroll max-h-[180px] overflow-y-auto space-y-1">
+            {context?.catData?.map((item, index) => (
+              <FormControlLabel
+                key={index}
+                value={item?._id}
+                control={
+                  <Checkbox
+                    size="small"
+                    icon={
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <rect
+                          x="3"
+                          y="3"
+                          width="18"
+                          height="18"
+                          rx="2"
+                          fill="rgba(255,255,255,0.3)"
+                          stroke="#001F5D"
+                          strokeWidth="2"
+                        />
+                      </svg>
+                    }
+                    checkedIcon={
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                        style={{
+                          transformOrigin: "center",
+                          animation: "popIn 0.2s ease-out",
+                        }}
+                      >
+                        <rect
+                          x="3"
+                          y="3"
+                          width="18"
+                          height="18"
+                          rx="2"
+                          fill="#001F5D"
+                          stroke="#001F5D"
+                          strokeWidth="2"
+                        />
+                        <path
+                          d="M7 12l3 3 7-7"
+                          stroke="#FFC107"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    }
                     sx={{
-                      "& .MuiFormControlLabel-label": {
-                        fontSize: "17px",
-                        fontWeight: "400",
-                        marginLeft: "6px",
+                      color: "#001F5D",
+                      "& .MuiSvgIcon-root": { fontSize: "20px" },
+
+                      // 💡 Hover hiệu ứng nhẹ
+                      "&:hover svg rect": {
+                        fill: "rgba(0, 31, 93, 0.15)", // nền xanh nhạt hơn khi hover
+                        stroke: "#001F5D",
+                        transition: "all 0.2s ease",
+                      },
+
+                      "&.Mui-checked:hover svg rect": {
+                        fill: "#002A8D", // xanh đậm hơn khi hover ở trạng thái checked
+                        filter: "drop-shadow(0 0 3px rgba(0,31,93,0.4))", // hiệu ứng sáng viền nhẹ
+                      },
+
+                      "@keyframes popIn": {
+                        "0%": { transform: "scale(0.6)", opacity: 0 },
+                        "80%": { transform: "scale(1.1)", opacity: 1 },
+                        "100%": { transform: "scale(1)", opacity: 1 },
                       },
                     }}
                   />
-                );
-              })}
+                }
+                checked={filter?.catId?.includes(item?._id)}
+                label={item?.name}
+                onChange={() => handleCheckboxChange("catId", item?._id)}
+                className="ripple-container w-full hover:bg-[#001f5d11] rounded-md px-1 transition-all "
+                sx={{
+                  "& .MuiFormControlLabel-label": {
+                    fontSize: "15px",
+                    fontWeight: "400",
+                    marginLeft: "6px",
+                    color: "#1a1a1a",
+                  },
+                }}
+              />
+            ))}
           </div>
         </Collapse>
       </div>
 
-      <div className="box mb-3">
-        <h3 className="text-[16px] font-semibold flex items-center w-full">
+      {/* KHẢ DỤNG */}
+      <div className="box mb-4 relative z-10">
+        <h3 className="flex items-center justify-between text-[15px] font-semibold text-gray-900 mb-1">
           Khả dụng
           <Button
-            className="!ml-1 !w-[40px] !min-w-[40px] !h-[40px] !rounded-full"
+            className="!ml-1 !w-8 !h-8 !min-w-0 !rounded-full !p-0 hover:!bg-white/20"
             onClick={() => setIsOpenAvailFilter(!isOpenAvailFilter)}
           >
-            {isOpenAvailFilter === true ? (
-              <FaAngleUp className="text-[20px]" />
+            {isOpenAvailFilter ? (
+              <FaAngleUp className="text-[18px] text-gray-700" />
             ) : (
-              <FaAngleDown className="text-[20px]" />
+              <FaAngleDown className="text-[18px] text-gray-700" />
             )}
           </Button>
         </h3>
-        {/* <CategoryCollapse className="!ml-[-200px] !capitalize"/> */}
+
         <Collapse isOpened={isOpenAvailFilter}>
-          <div className="">
-            <div className="flex items-center">
-              <FormControlLabel
-                control={<Checkbox size="small" />}
-                label="Có sẵn"
-                className="w-full"
-                sx={{
-                  "& .MuiFormControlLabel-label": {
-                    fontSize: "17px",
-                    fontWeight: "400",
-                    marginLeft: "6px",
-                  },
-                }}
-              />
-              <span className="text-[16px] font-medium mr-2">(16)</span>
-            </div>
-            <div className="flex items-center">
-              <FormControlLabel
-                control={<Checkbox size="small" />}
-                label="InStock"
-                className="w-full"
-                sx={{
-                  "& .MuiFormControlLabel-label": {
-                    fontSize: "17px",
-                    fontWeight: "400",
-                    marginLeft: "6px",
-                  },
-                }}
-              />
-              <span className="text-[16px] font-medium mr-2">(16)</span>
-            </div>
-            <div className="flex items-center">
-              <FormControlLabel
-                control={<Checkbox size="small" />}
-                label="Not Available"
-                className="w-full"
-                sx={{
-                  "& .MuiFormControlLabel-label": {
-                    fontSize: "17px",
-                    fontWeight: "400",
-                    marginLeft: "6px",
-                  },
-                }}
-              />
-              <span className="text-[16px] font-medium mr-2">(1)</span>
-            </div>
+          <div className="space-y-1">
+            {["Có sẵn", "InStock", "Not Available"].map((label, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between hover:bg-white/20 rounded-md px-1 transition-all"
+              >
+                <FormControlLabel
+                  control={<Checkbox size="small" />}
+                  label={label}
+                  className="w-full"
+                  sx={{
+                    "& .MuiFormControlLabel-label": {
+                      fontSize: "15px",
+                      fontWeight: "400",
+                      marginLeft: "6px",
+                      color: "#1a1a1a",
+                    },
+                  }}
+                />
+                <span className="text-[14px] text-gray-700">(16)</span>
+              </div>
+            ))}
           </div>
         </Collapse>
       </div>
 
-      <div className="box mb-4">
-        <h3 className="text-[16px] font-semibold flex items-center w-full">
+      {/* SIZE */}
+      <div className="box mb-4 relative z-10">
+        <h3 className="flex items-center justify-between text-[15px] font-semibold text-gray-900 mb-1">
           Size
           <Button
-            className="!ml-1 !w-[40px] !min-w-[40px] !h-[40px] !rounded-full"
+            className="!ml-1 !w-8 !h-8 !min-w-0 !rounded-full !p-0 hover:!bg-white/20"
             onClick={() => setIsOpenSizeFilter(!isOpenSizeFilter)}
           >
-            {isOpenSizeFilter === true ? (
-              <FaAngleUp className="text-[20px]" />
+            {isOpenSizeFilter ? (
+              <FaAngleUp className="text-[18px] text-gray-700" />
             ) : (
-              <FaAngleDown className="text-[20px]" />
+              <FaAngleDown className="text-[18px] text-gray-700" />
             )}
           </Button>
         </h3>
-        {/* <CategoryCollapse className="!ml-[-200px] !capitalize"/> */}
+
         <Collapse isOpened={isOpenSizeFilter}>
-          <div className="">
-            <div className="flex items-center">
-              <FormControlLabel
-                control={<Checkbox size="small" />}
-                label="Small size"
-                className="w-full"
-                sx={{
-                  "& .MuiFormControlLabel-label": {
-                    fontSize: "17px",
-                    fontWeight: "400",
-                    marginLeft: "6px",
-                  },
-                }}
-              />
-              <span className="text-[16px] font-medium mr-2">(16)</span>
-            </div>
-            <div className="flex items-center">
-              <FormControlLabel
-                control={<Checkbox size="small" />}
-                label="Medium size"
-                className="w-full"
-                sx={{
-                  "& .MuiFormControlLabel-label": {
-                    fontSize: "17px",
-                    fontWeight: "400",
-                    marginLeft: "6px",
-                  },
-                }}
-              />
-              <span className="text-[16px] font-medium mr-2">(16)</span>
-            </div>
-            <div className="flex items-center">
-              <FormControlLabel
-                control={<Checkbox size="small" />}
-                label="Large size"
-                className="w-full"
-                sx={{
-                  "& .MuiFormControlLabel-label": {
-                    fontSize: "17px",
-                    fontWeight: "400",
-                    marginLeft: "6px",
-                  },
-                }}
-              />
-              <span className="text-[16px] font-medium mr-2">(1)</span>
-            </div>
-            <div className="flex items-center">
-              <FormControlLabel
-                control={<Checkbox size="small" />}
-                label="XL"
-                className="w-full"
-                sx={{
-                  "& .MuiFormControlLabel-label": {
-                    fontSize: "17px",
-                    fontWeight: "400",
-                    marginLeft: "6px",
-                  },
-                }}
-              />
-              <span className="text-[16px] font-medium mr-2">(1)</span>
-            </div>
-            <div className="flex items-center">
-              <FormControlLabel
-                control={<Checkbox size="small" />}
-                label="XXL"
-                className="w-full"
-                sx={{
-                  "& .MuiFormControlLabel-label": {
-                    fontSize: "17px",
-                    fontWeight: "400",
-                    marginLeft: "6px",
-                  },
-                }}
-              />
-              <span className="text-[16px] font-medium mr-2">(1)</span>
-            </div>
+          <div className="space-y-1">
+            {["Small size", "Medium size", "Large size", "XL", "XXL"].map(
+              (label, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between hover:bg-white/20 rounded-md px-1 transition-all"
+                >
+                  <FormControlLabel
+                    control={<Checkbox size="small" />}
+                    label={label}
+                    className="w-full"
+                    sx={{
+                      "& .MuiFormControlLabel-label": {
+                        fontSize: "15px",
+                        fontWeight: "400",
+                        marginLeft: "6px",
+                        color: "#1a1a1a",
+                      },
+                    }}
+                  />
+                  <span className="text-[14px] text-gray-700">(16)</span>
+                </div>
+              )
+            )}
           </div>
         </Collapse>
       </div>
 
-      <div className="box mb-1">
-        <h3 className="text-[17px] font-medium flex items-center w-full">
+      {/* GIÁ */}
+      <div className="box mb-4 relative z-10">
+        <h3 className="text-[15px] font-semibold text-gray-900 mb-1">
           Lọc theo giá
         </h3>
         <RangeSlider
@@ -356,117 +406,42 @@ const Sidebar = (props) => {
           min={100}
           max={600}
           step={5}
-          className="!font-light !text-[10px] my-3"
+          className="my-3 accent-blue-600"
         />
-        <div className="flex pt-1 pb-2 priceRange !items-center justify-between">
-          <span className="">
-            <span className="text-black font-medium">
-              {price[0].toLocaleString("vi-VN")}
-            </span>
-          </span>
-
-          <span className="ml-auto">
-            <span className="text-black font-medium mr-2">
-              {price[1].toLocaleString("vi-VN")},000 VNĐ
-            </span>
-          </span>
+        <div className="flex justify-between text-[14px] text-gray-700">
+          <span>{price[0].toLocaleString("vi-VN")}</span>
+          <span>{price[1].toLocaleString("vi-VN")},000 VNĐ</span>
         </div>
       </div>
 
-      <div className="box">
-        <h3 className="text-[17px] font-medium flex items-center w-full">
-          Filter By Rating
+      {/* RATING */}
+      <div className="box relative z-10">
+        <h3 className="text-[15px] font-semibold text-gray-900 mb-1">
+          Đánh giá
         </h3>
-        <div className="w-full flex items-center justify-between mt-2">
-          <FormControlLabel
-            value={5}
-            control={<Checkbox size="small" />}
-            className="w-full"
-            checked={filter?.rating?.includes(5)}
-            onChange={() => handleCheckboxChange("rating", 5)}
-            sx={{
-              "& .MuiFormControlLabel-label": {
-                fontSize: "17px",
-                fontWeight: "400",
-                marginLeft: "6px",
-              },
-            }}
-          />
-          <Rating name="rating" value={5} size="medium" readOnly />
-          <span className="text-[16px] font-medium mr-2">(5)</span>
-        </div>
-        <div className="w-full flex items-center justify-between mt-2">
-          <FormControlLabel
-            value={4}
-            control={<Checkbox size="small" />}
-            className="w-full"
-            checked={filter?.rating?.includes(4)}
-            onChange={() => handleCheckboxChange("rating", 4)}
-            sx={{
-              "& .MuiFormControlLabel-label": {
-                fontSize: "17px",
-                fontWeight: "400",
-                marginLeft: "6px",
-              },
-            }}
-          />
-          <Rating name="rating" value={4} size="medium" readOnly />
-          <span className="text-[16px] font-medium mr-2">(5)</span>
-        </div>
-        <div className="w-full flex items-center justify-between mt-2">
-          <FormControlLabel
-            value={3}
-            control={<Checkbox size="small" />}
-            className="w-full"
-            checked={filter?.rating?.includes(3)}
-            onChange={() => handleCheckboxChange("rating", 3)}
-            sx={{
-              "& .MuiFormControlLabel-label": {
-                fontSize: "17px",
-                fontWeight: "400",
-                marginLeft: "6px",
-              },
-            }}
-          />
-          <Rating name="rating" value={3} size="medium" readOnly />
-          <span className="text-[16px] font-medium mr-2">(5)</span>
-        </div>
-        <div className="w-full flex items-center justify-between mt-2">
-          <FormControlLabel
-            value={2}
-            control={<Checkbox size="small" />}
-            className="w-full"
-            checked={filter?.rating?.includes(2)}
-            onChange={() => handleCheckboxChange("rating", 2)}
-            sx={{
-              "& .MuiFormControlLabel-label": {
-                fontSize: "17px",
-                fontWeight: "400",
-                marginLeft: "6px",
-              },
-            }}
-          />
-          <Rating name="rating" value={2} size="medium" readOnly />
-          <span className="text-[16px] font-medium mr-2">(5)</span>
-        </div>
-        <div className="w-full flex items-center justify-between mt-2">
-          <FormControlLabel
-            value={1}
-            control={<Checkbox size="small" />}
-            className="w-full"
-            checked={filter?.rating?.includes(1)}
-            onChange={() => handleCheckboxChange("rating", 1)}
-            sx={{
-              "& .MuiFormControlLabel-label": {
-                fontSize: "17px",
-                fontWeight: "400",
-                marginLeft: "6px",
-              },
-            }}
-          />
-          <Rating name="rating" value={1} size="medium" readOnly />
-          <span className="text-[16px] font-medium mr-2">(5)</span>
-        </div>
+        {[5, 4, 3, 2, 1].map((rating) => (
+          <div
+            key={rating}
+            className="flex items-center justify-between mt-1 hover:bg-white/20 rounded-md px-1 transition-all"
+          >
+            <FormControlLabel
+              value={rating}
+              control={<Checkbox size="small" />}
+              className="w-full"
+              checked={filter?.rating?.includes(rating)}
+              onChange={() => handleCheckboxChange("rating", rating)}
+              sx={{
+                "& .MuiFormControlLabel-label": {
+                  fontSize: "15px",
+                  fontWeight: "400",
+                  marginLeft: "6px",
+                  color: "#1a1a1a",
+                },
+              }}
+            />
+            <Rating name="rating" value={rating} size="small" readOnly />
+          </div>
+        ))}
       </div>
     </aside>
   );

@@ -12,6 +12,15 @@ export default {
       backgroundColor: {
         primary: "#0E1D61",
       },
+      keyframes: {
+        marquee: {
+          "0%": { transform: "translateX(100%)" },
+          "100%": { transform: "translateX(-200%)" },
+        },
+      },
+      animation: {
+        marquee: "marquee 8s linear infinite",
+      },
     },
   },
   plugins: [],

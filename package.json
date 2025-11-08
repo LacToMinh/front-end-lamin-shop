@@ -28,6 +28,7 @@
     "react-international-phone": "^4.6.0",
     "react-range-slider-input": "^3.2.1",
     "react-router-dom": "^7.6.1",
+    "socket.io-client": "^4.8.1",
     "styled-components": "^6.1.18",
     "swiper": "^11.2.8"
   },

@@ -4,17 +4,27 @@ import { LiaAngleDownSolid } from "react-icons/lia";
 import { Link } from "react-router-dom";
 import { GoRocket } from "react-icons/go";
 import CategoryPanel from "./CategoryPanel";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getDataFromApi } from "../../../utils/api";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 const Navigation = () => {
   const [isOpenCatPanel, setIsOpenCatPanel] = useState(false);
   const [catData, setCatData] = useState([]);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const scrollRef = useRef();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     getDataFromApi("/api/category").then((res) => {
-      console.log(res);
-      setCatData(res?.data);
+      setCatData(res?.data || []);
     });
   }, []);
 
@@ -22,111 +32,138 @@ const Navigation = () => {
     setIsOpenCatPanel(!isOpenCatPanel);
   };
 
+  const scrollMenu = (direction) => {
+    if (!scrollRef.current) return;
+    const scrollAmount = 150;
+    scrollRef.current.scrollBy({
+      left: direction === "left" ? -scrollAmount : scrollAmount,
+      behavior: "smooth",
+    });
+  };
+
   return (
     <>
-      <nav className="my-1 flex items-center">
-        <div className="container flex items-center justify-end gap-3">
-          <div className="col1 w-[18%]">
-            <Button
-              className="!text-black gap-2 !text-[17px] !px-0 !font-semibold items-center"
-              onClick={openCategoryPanel}
+      <nav
+        className={`sticky top-0 z-30 w-full transition-all duration-500 ${
+          isScrolled ? "pt-2 bg-white shadow-md" : "pt-0"
+        }`}
+      >
+        <div className="container mx-auto flex items-center justify-between gap-4 py-2">
+          {/* col1 – chỉ hiển thị khi chưa scroll */}
+          {!isScrolled && (
+            <div className="hidden md:block items-center gap-2 w-[20%]">
+              <Button
+                className="!text-black gap-2 !text-sm md:!text-base !px-0 !font-semibold"
+                onClick={openCategoryPanel}
+              >
+                <CgMenuGridR className="text-base" />
+                Shop by Categories
+                <LiaAngleDownSolid className="mt-[-4px] text-sm" />
+              </Button>
+            </div>
+          )}
+
+          {/* col2 – thanh menu cuộn bằng nút */}
+          <div
+            className={`relative md:w-[80%] w-full transition-all duration-500 ${
+              isScrolled
+                ? "fixed top-0 left-1/2 -translate-x-1/2 z-[0] w-[95%] sm:w-[80%] lg:w-fit backdrop-blur-xl bg-[rgba(20,20,20,0.5)] bg-gradient-to-r from-[rgba(20,20,20,0.55)] to-[rgba(60,60,60,0.35)] border border-white/20 rounded-2xl ring-1 ring-white/30 px-10 py-2 shadow-[0_8px_25px_rgba(0,0,0,0.15)]"
+                : ""
+            }`}
+          >
+            {/* Nút cuộn trái */}
+            <button
+              onClick={() => scrollMenu("left")}
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-[999]
+             w-6 h-6 bg-transparent text-[#001F5D] hover:text-yellow-500
+             transition-all block md:hidden"
             >
-              <CgMenuGridR className="items-center text-[17px] mt-[-2px] ml-[-3px]" />
-              Shop by categories
-              <LiaAngleDownSolid className="mt-[-4px] text-[16px] font-extrabold" />
-            </Button>
-          </div>
+              <FaChevronLeft size={16} />
+            </button>
 
-          <div className="col2 w-[62%] pl-10">
-            <ul className="flex items-center gap-1 nav">
-              <li className="list-none">
-                <Link
-                  to="/"
-                  className="link transition text-[16px] font-semibold"
-                >
-                  <Button className="!text-black !text-[16px] !font-semibold">
-                    Trang chủ
+            {/* Menu cuộn */}
+            <div
+              ref={scrollRef}
+              className="mx-8 overflow-hidden whitespace-nowrap scroll-smooth pl-56 md:pl-0"
+            >
+              <ul className="flex items-center justify-center gap-0">
+                <li>
+                  <Button
+                    className={`!text-sm md:!text-base !font-semibold !p-0 ${
+                      isScrolled
+                        ? "!text-[#FFD700] drop-shadow-[0_0_6px_rgba(255,215,0,0.6)]"
+                        : "!text-black hover:!text-[#001F5D]"
+                    }`}
+                  >
+                    Trang Chủ
                   </Button>
-                </Link>
-              </li>
-              {catData?.length !== 0 &&
-                catData?.map((cat, index) => {
-                  return (
-                    <>
-                      <li className="list-none relative" key={index}>
-                        <Link
-                          to={`/productListing?catId=${cat?._id}`}
-                          className="link transition text-[18px] font-semibold"
-                        >
-                          <Button className="!text-black !text-[16px] hover:!text-[#ff5252] !font-semibold">
-                            {cat?.name}
-                          </Button>
-                        </Link>
-                        {cat?.children?.length !== 0 && (
-                          <div
-                            className="submenu absolute top-[200%] left-[0%] min-w-[200px] bg-white shadow-md opacity-0 invisible mt-[5px]
-                                        transition-all duration-500 ease-in-out
-                                        submenu-hover:opacity-100
-                                        submenu-hover:delay-0 z-10"
-                          >
-                            <ul className="">
-                              {cat?.children?.map((subCat, index) => {
-                                return (
-                                  <li className="list-none" key={index}>
-                                    <Link to={`/productListing?subCatId=${subCat._id}`} className="w-full relative">
-                                      <Button className="!text-black !text-[16px] !w-full !flex !justify-start !font-medium !rounded-none">
-                                        {subCat?.name}
-                                      </Button>
+                </li>
 
-                                      <div
-                                        className="submenu absolute top-[0%] left-[100%] min-w-[200px] bg-white shadow-md opacity-0  transition-all duration-500 ease-in-out
-                                                  submenu-hover:opacity-100
-                                                  submenu-hover:delay-0 delay-100 z-10"
-                                      >
-                                        <ul className="">
-                                          {subCat?.children?.map(
-                                            (thirdCat, index) => {
-                                              return (
-                                                <li
-                                                  className="list-none"
-                                                  key={index}
-                                                >
-                                                  <Link to={`/productListing?thirdSubCatId=${thirdCat._id}`}>
-                                                    <Button className="!text-black !text-[16px] !w-full !flex !justify-start !font-medium !rounded-none">
-                                                      {thirdCat.name}
-                                                    </Button>
-                                                  </Link>
-                                                </li>
-                                              );
-                                            }
-                                          )}
-                                        </ul>
-                                      </div>
-                                    </Link>
-                                  </li>
-                                );
-                              })}
-                            </ul>
-                          </div>
-                        )}
-                      </li>
-                    </>
-                  );
-                })}
-            </ul>
+                {catData?.map((cat) => (
+                  <li key={cat._id}>
+                    <Link to={`/productListing?catId=${cat._id}`}>
+                      <Button
+                        className={`!text-sm md:!text-base !font-semibold ${
+                          isScrolled
+                            ? "!text-[#FFD700] drop-shadow-[0_0_6px_rgba(255,215,0,0.6)]"
+                            : "!text-black hover:!text-[#001F5D]"
+                        }`}
+                      >
+                        {cat.name}
+                      </Button>
+                    </Link>
+                  </li>
+                ))}
+
+                <li>
+                  <Button
+                    className={`!text-sm md:!text-base !font-semibold ${
+                      isScrolled
+                        ? "!text-[#FFD700] drop-shadow-[0_0_6px_rgba(255,215,0,0.6)]"
+                        : "!text-black hover:!text-[#001F5D]"
+                    }`}
+                  >
+                    Hàng Mới
+                  </Button>
+                </li>
+                <li>
+                  <Button
+                    className={`!text-sm md:!text-base !font-semibold ${
+                      isScrolled
+                        ? "!text-[#FFD700] drop-shadow-[0_0_6px_rgba(255,215,0,0.6)]"
+                        : "!text-black hover:!text-[#001F5D]"
+                    }`}
+                  >
+                    Hàng Bán Chạy
+                  </Button>
+                </li>
+              </ul>
+            </div>
+
+            {/* Nút cuộn phải */}
+            <button
+              onClick={() => scrollMenu("right")}
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-[999]
+               w-6 h-6 bg-transparent text-[#001F5D] hover:text-yellow-500 transition-all block md:hidden"
+            >
+              <FaChevronRight size={16} />
+            </button>
           </div>
 
-          <div className="col3 w-[20%]">
-            <p className="font-[500] text-[16px] flex items-center justify-end gap-2 mr-2">
-              <GoRocket className="text-[20px] text-end" /> Free International
-              Delivery
-            </p>
-          </div>
+          {/* col3 – chỉ hiển thị khi chưa scroll */}
+          {!isScrolled && (
+            <div className="hidden md:flex items-center gap-2 w-0 md:w-[20%]">
+              <GoRocket className="text-xl" />
+              <p className="text-sm text-black/80 font-medium">
+                Free International Delivery
+              </p>
+            </div>
+          )}
         </div>
       </nav>
 
       {/* CategoryPanel */}
-      {catData?.length !== 0 && (
+      {catData?.length > 0 && (
         <CategoryPanel
           openCategoryPanel={openCategoryPanel}
           isOpenCatPanel={isOpenCatPanel}

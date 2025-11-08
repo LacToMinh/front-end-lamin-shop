@@ -167,12 +167,15 @@ a {
 }
 
 .MuiTab-textColorPrimary {
-  color: #000 !important;
-  font-weight: 600 !important;
+  font-size: 16px !important;
+  color: #9c9c9c !important;
+  font-weight: 700 !important;
 }
 
 .MuiTab-textColorPrimary.Mui-selected {
-  color: #ff5252 !important;
+  font-size: 16px;
+  color: black !important;
+  font-weight: 700 !important;
 }
 
 .mySwiperProduct .swiper-wrapper {
@@ -343,13 +346,27 @@ input[type="password"]::-webkit-outer-spin-button {
   color: #e91717 !important;
 }
 
-@keyframes fadeIn { from { opacity: 0; transform: translateY(-8px);} to { opacity: 1; transform: none;}}
-.animate-fade-in { animation: fadeIn 0.3s;}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s;
+}
 
 @keyframes spinOnce {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -376,14 +393,340 @@ input[type="password"]::-webkit-outer-spin-button {
   position: absolute;
   inset: 0;
   opacity: 0;
-  animation: fadeIn 0.1s ease-in-out 1s forwards; /* hiện ra sau khi quay xong */
+  animation: fadeIn 0.1s ease-in-out 1s forwards;
+  /* hiện ra sau khi quay xong */
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+
+.scroll {
+  scrollbar-width: thin;
+  /* Firefox */
+  scrollbar-color: #d1d5db #f9fafb;
+  /* thumb, track */
+}
+
+.scroll::-webkit-scrollbar {
+  width: 6px;
+  /* chiều rộng thanh cuộn */
+}
+
+.scroll::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  /* gray-300 */
+  border-radius: 10px;
+}
+
+.scroll::-webkit-scrollbar-thumb:hover {
+  background-color: #9ca3af;
+  /* gray-400 */
+}
+
+.scroll::-webkit-scrollbar-track {
+  background-color: #f9fafb;
+  /* gray-50 */
+}
+
+
+/* 🌈 Liquid Glass dynamic reflection */
+.sidebar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 1rem;
+  background: radial-gradient(circle at var(--x, 50%) var(--y, 50%),
+      rgba(255, 255, 255, 0.35),
+      rgba(255, 255, 255, 0.05) 60%),
+    linear-gradient(135deg,
+      rgba(255, 255, 255, 0.25),
+      rgba(255, 255, 255, 0.05));
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  transition: background 0.2s ease-out;
+  z-index: 0;
+}
+
+/* Hiệu ứng ánh sáng di chuyển mềm mịn */
+.sidebar {
+  position: relative;
+  overflow: hidden;
+}
+
+/* 🌊 Ripple effect for sidebar rows */
+.ripple-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple-container::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(0, 31, 93, 0.15);
+  /* xanh navy trong suốt */
+  width: 10px;
+  height: 10px;
+  transform: scale(0);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.6s ease-out, opacity 0.8s ease-out;
+}
+
+.ripple-container:active::after {
+  transform: scale(25);
+  opacity: 1;
+  transition: transform 0.3s ease-out, opacity 0.6s ease-out;
+}
+
+/* Hiệu ứng bung ra */
+@keyframes expandGlass {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0) scaleX(0.1) scaleY(0.9);
+    filter: blur(4px);
+    box-shadow: 0 0 0px rgba(0, 102, 255, 0);
+  }
+
+  40% {
+    opacity: 0.7;
+    transform: translate(-50%, 0) scaleX(0.6) scaleY(0.96);
+    filter: blur(2px);
+    box-shadow: 0 0 12px rgba(0, 102, 255, 0.5);
+  }
+
+  80% {
+    opacity: 1;
+    transform: translate(-50%, 0) scaleX(1.16) scaleY(1);
+    filter: blur(0);
+    box-shadow: 0 0 18px rgba(0, 102, 255, 0.3);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translate(-50%, 0) scaleX(1) scaleY(1);
+    box-shadow: 0 0 10px rgba(0, 102, 255, 0.2);
+  }
+}
+
+/* Shimmer chạy ngang */
+@keyframes shimmerLight {
+  0% {
+    left: -40%;
+    opacity: 0;
+  }
+
+  15% {
+    opacity: 0.3;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
+
+  100% {
+    left: 140%;
+    opacity: 0;
+  }
+}
+
+
+/* Hiệu ứng glow + shimmer */
+.animate-expandGlass {
+  animation: expandGlass 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  position: relative;
+  overflow: hidden;
+  background-clip: padding-box;
+}
+
+/* Pseudo ánh sáng phản chiếu */
+.animate-expandGlass::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -40%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(120deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.55) 50%,
+      rgba(255, 255, 255, 0) 100%);
+  transform: skewX(-20deg);
+  animation: shimmerLight 1.5s ease-in-out infinite;
+  animation-delay: 0s;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+
+
+}
+
+/* Vòng sáng dịu lan rộng nhẹ */
+.animate-expandGlass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+  opacity: 0;
+  animation: glowPulse 1.3s ease-out forwards;
+}
+
+@keyframes glowPulse {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  50% {
+    opacity: 0.7;
+    transform: scale(1.02);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.animate-fadeSlideIn {
+  animation: fadeSlideIn 0.5s ease-out forwards;
+}
+
+/* 🔁 Rung form khi lỗi */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+.shake { animation: shake 0.4s ease-in-out; }
+
+/* 🔴 Viền đỏ glow nhẹ khi thiếu */
+.error-input .MuiOutlinedInput-root fieldset {
+  border-color: #dc2626 !important;
+  box-shadow: 0 0 4px rgba(220, 38, 38, 0.6);
+}
+.error-phone {
+  border: 1px solid #dc2626;
+  border-radius: 8px;
+  box-shadow: 0 0 4px rgba(220, 38, 38, 0.5);
+  padding: 3px;
+}
+
+/* ✅ Success overlay animation */
+.success-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  animation: fadeIn 0.3s ease-in-out;
+}
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
+/* ✅ Checkmark animation */
+.success-checkmark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.check-icon {
+  width: 80px;
+  height: 80px;
+  position: relative;
+  border-radius: 50%;
+  box-sizing: content-box;
+  border: 4px solid #16a34a;
+}
+.icon-line {
+  height: 5px;
+  background-color: #16a34a;
+  display: block;
+  border-radius: 2px;
+  position: absolute;
+}
+.line-tip {
+  top: 38px;
+  left: 14px;
+  width: 25px;
+  transform: rotate(45deg);
+  animation: icon-line-tip 0.7s ease forwards;
+}
+.line-long {
+  top: 32px;
+  right: 8px;
+  width: 45px;
+  transform: rotate(-45deg);
+  animation: icon-line-long 0.8s ease forwards;
+}
+@keyframes icon-line-tip {
+  0% { width: 0; left: 1px; top: 19px; }
+  100% { width: 25px; left: 14px; top: 38px; }
+}
+@keyframes icon-line-long {
+  0% { width: 0; right: 46px; top: 54px; }
+  100% { width: 45px; right: 8px; top: 32px; }
+}
 
+/* 🎨 Tùy chỉnh thanh scroll voucher */
+.voucher-scroll::-webkit-scrollbar {
+  height: 6px; /* 🔹 Giảm độ dày */
+}
 
+.voucher-scroll::-webkit-scrollbar-track {
+  background: #f1f4ff; /* nền nhạt */
+  border-radius: 8px;
+}
+
+.voucher-scroll::-webkit-scrollbar-thumb {
+  background: #001F5D; /* màu chủ đạo */
+  border-radius: 8px;
+}
+
+.voucher-scroll::-webkit-scrollbar-thumb:hover {
+  background: #0a2875; /* khi hover */
+}
+
+.nav-scroll::-webkit-scrollbar {
+  height: 6px; /* 🔹 Giảm độ dày */
+}
+
+.nav-scroll::-webkit-scrollbar-track {
+  background: #f1f4ff; /* nền nhạt */
+  border-radius: 8px;
+}
+
+.nav-scroll::-webkit-scrollbar-thumb {
+  background: #001F5D; /* màu chủ đạo */
+  border-radius: 8px;
+}
+
+.nav-scroll::-webkit-scrollbar-thumb:hover {
+  background: #0a2875; /* khi hover */
+}
 

@@ -67,9 +67,9 @@ const ProductItem = ({ item }) => {
 
         <div className="flex items-center gap-3 mt-2">
           <span className="newPrice text-[16px] font-bold text-[#001F5D]">
-            {item?.price},000₫
+            {Number(item?.price).toLocaleString("vi-VN")}₫
           </span>
-          <span className="line-through text-gray-400 text-base">{item?.oldPrice},000₫</span>
+          <span className="line-through text-gray-400 text-base">{Number(item?.oldPrice).toLocaleString("vi-VN")}₫</span>
           <span className="discount flex items-center px-3 py-[0px] bg-[#FF0000] rounded-2xl text-[13px] text-white font-semibold">
             {item?.discount}%
           </span>

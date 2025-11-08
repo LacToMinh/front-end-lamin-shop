@@ -4,10 +4,16 @@ import { BsBagCheckFill } from "react-icons/bs";
 import { Button, Radio } from "@mui/material";
 import { MyContext } from "../../App";
 import AddAddressDrawer from "../../components/AddAddressDrawer";
-import { deleteData, getDataFromApi, postData } from "../../utils/api";
+import {
+  deleteData,
+  editData,
+  getDataFromApi,
+  postData,
+} from "../../utils/api";
 import { FiTrash } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import VoucherSection from "../../components/Voucher";
 
 const VITE_APP_RAZORPAY_KEY_ID = import.meta.env.VITE_APP_RAZORPAY_KEY_ID;
 const VITE_APP_PAYPAL_CLIENT_ID = import.meta.env.VITE_APP_PAYPAL_CLIENT_ID;
@@ -31,6 +37,42 @@ const Checkout = () => {
     email: "",
     mobile: "",
   });
+
+  // const [voucherCode, setVoucherCode] = useState("");
+  const [discountAmount, setDiscountAmount] = useState(0);
+  // const [voucherMessage, setVoucherMessage] = useState("");
+  // const [voucherSuccess, setVoucherSuccess] = useState(false);
+
+  // const applyVoucher = async () => {
+  //   if (!voucherCode.trim()) {
+  //     setVoucherMessage("Vui lòng nhập mã giảm giá!");
+  //     setVoucherSuccess(false);
+  //     return;
+  //   }
+
+  //   try {
+  //     const res = await fetch(
+  //       `${VITE_API_URL}/api/voucher/validate/${voucherCode}?total=${totalAmount}`
+  //     );
+  //     const data = await res.json();
+
+  //     if (data.success) {
+  //       setDiscountAmount(data.discountAmount);
+  //       setVoucherSuccess(true);
+  //       setVoucherMessage(
+  //         `Áp dụng thành công! Giảm ${data.discountAmount.toLocaleString()} ₫`
+  //       );
+  //     } else {
+  //       setDiscountAmount(0);
+  //       setVoucherSuccess(false);
+  //       setVoucherMessage(data.message);
+  //     }
+  //   } catch (err) {
+  //     setDiscountAmount(0);
+  //     setVoucherSuccess(false);
+  //     setVoucherMessage("Không thể kiểm tra mã giảm giá!");
+  //   }
+  // };
 
   const fetchAddresses = async () => {
     const res = await getDataFromApi("/api/address/get");
@@ -128,61 +170,125 @@ const Checkout = () => {
     localStorage.setItem("totalAmount", total); // <-- Lưu số vào localStorage
   }, [context.cartData]);
 
-  const checkout = (e) => {
+  // const checkout = (e) => {
+  //   e.preventDefault();
+
+  //   var payLoad = {
+  //     key: VITE_APP_RAZORPAY_KEY_ID,
+  //     // key_secret: VITE_APP_RAZORPAY_KEY_SECRET,
+  //     amount: parseInt(totalAmount * 1000),
+  //     currency: "INR",
+  //     order_receipt: "order_rcptid_" + context?.userData?.name,
+  //     name: "Lamin Ecommerce",
+  //     description: "for testing purpose",
+  //     handler: function (res) {
+  //       console.log(res);
+  //       const paymentId = res.razorpay_payment_id;
+  //       const user = context?.userData;
+
+  //       const payLoad = {
+  //         userId: user?._id,
+  //         products: context?.cartData,
+  //         paymentId: paymentId,
+  //         payment_status: "COMPLETED",
+  //         delivery_address: selectedValue,
+  //         totalAmt: totalAmount,
+  //         date: new Date().toLocaleString("en-US", {
+  //           month: "short",
+  //           day: "2-digit",
+  //           year: "numeric",
+  //         }),
+  //       };
+
+  //       // Loại thẻ	Số thẻ test (Card Number)	Expiry	CVV	OTP
+  //       // Visa	4111 1111 1111 1111	12/25	123	123456
+  //       // MasterCard	5555 5555 5555 4444	12/25	123	123456
+  //       // RuPay	6076 4890 0000 0004	12/25	123	123456
+  //       // Maestro	6759 6498 2643 8453	12/25	123	123456
+
+  //       postData(`/api/order/create`, payLoad).then((res) => {
+  //         context.alertBox("success", res?.message);
+  //         if (res?.error === false) {
+  //           deleteData(`/api/cart/emptyCart/${userId}`).then((res) => {
+  //             context?.getCartItems();
+  //           });
+  //           navigate("/");
+  //         } else {
+  //           context.alertBox("error", res?.message);
+  //         }
+  //       });
+  //     },
+  //     theme: {
+  //       color: "#001F5D",
+  //     },
+  //   };
+
+  //   var pay = new window.Razorpay(payLoad);
+  //   pay.open();
+  // };
+
+  const checkout = async (e) => {
     e.preventDefault();
 
-    var payLoad = {
-      key: VITE_APP_RAZORPAY_KEY_ID,
-      // key_secret: VITE_APP_RAZORPAY_KEY_SECRET,
-      amount: parseInt(totalAmount * 1000),
-      currency: "INR",
-      order_receipt: "order_rcptid_" + context?.userData?.name,
-      name: "Lamin Ecommerce",
-      description: "for testing purpose",
-      handler: function (res) {
-        console.log(res);
-        const paymentId = res.razorpay_payment_id;
-        const user = context?.userData;
+    if (!selectedValue) {
+      context.alertBox("error", "Vui lòng chọn địa chỉ giao hàng");
+      return;
+    }
 
-        const payLoad = {
-          userId: user?._id,
-          products: context?.cartData,
-          paymentId: paymentId,
-          payment_status: "COMPLETED",
-          delivery_address: selectedValue,
-          totalAmt: totalAmount,
-          date: new Date().toLocaleString("en-US", {
-            month: "short",
-            day: "2-digit",
-            year: "numeric",
-          }),
-        };
+    try {
+      // 🔹 Quy đổi từ VND → INR (tạm tính 1 INR = 300 VND)
+      const VND_TO_INR = 300;
+      const convertedAmount = Math.round(totalAmount / VND_TO_INR);
 
-        // Loại thẻ	Số thẻ test (Card Number)	Expiry	CVV	OTP
-        // Visa	4111 1111 1111 1111	12/25	123	123456
-        // MasterCard	5555 5555 5555 4444	12/25	123	123456
-        // RuPay	6076 4890 0000 0004	12/25	123	123456
-        // Maestro	6759 6498 2643 8453	12/25	123	123456
+      const payLoad = {
+        key: VITE_APP_RAZORPAY_KEY_ID,
+        amount: convertedAmount * 100, // Razorpay yêu cầu paise (1 INR = 100 paise)
+        currency: "INR",
+        order_receipt: "order_rcptid_" + context?.userData?.name,
+        name: "Lamin Ecommerce",
+        description: "Thanh toán đơn hàng từ Việt Nam",
+        handler: function (res) {
+          const paymentId = res.razorpay_payment_id;
+          const user = context?.userData;
 
-        postData(`/api/order/create`, payLoad).then((res) => {
-          context.alertBox("success", res?.message);
-          if (res?.error === false) {
-            deleteData(`/api/cart/emptyCart/${userId}`).then((res) => {
-              context?.getCartItems();
-            });
-            navigate("/");
-          } else {
-            context.alertBox("error", res?.message);
-          }
-        });
-      },
-      theme: {
-        color: "#001F5D",
-      },
-    };
+          const orderData = {
+            userId: user?._id,
+            products: context?.cartData,
+            paymentId: paymentId,
+            payment_status: "COMPLETED",
+            delivery_address: selectedValue,
+            totalAmt: totalAmount - discountAmount,
+            voucherCode: voucherCode,
+            date: new Date().toLocaleString("vi-VN", {
+              month: "short",
+              day: "2-digit",
+              year: "numeric",
+            }),
+          };
 
-    var pay = new window.Razorpay(payLoad);
-    pay.open();
+          postData(`/api/order/create`, orderData).then((res) => {
+            if (!res.error) {
+              context.alertBox("success", "Thanh toán thành công!");
+              deleteData(`/api/cart/emptyCart/${user._id}`).then(() => {
+                context.getCartItems();
+                navigate("/");
+              });
+            } else {
+              context.alertBox("error", res.message);
+            }
+          });
+        },
+        theme: {
+          color: "#001F5D",
+        },
+      };
+
+      const razor = new window.Razorpay(payLoad);
+      razor.open();
+    } catch (err) {
+      console.error("Razorpay Checkout Error:", err);
+      context.alertBox("error", "Không thể xử lý thanh toán Razorpay");
+    }
   };
 
   useEffect(() => {
@@ -410,244 +516,262 @@ const Checkout = () => {
 
   return (
     <>
-      <section className="py-10">
-        <form action="" onSubmit={checkout}>
-          <div className="container flex gap-8">
-            <div className="leftCol w-[70%]">
-              <div className="card w-full bg-white shadow-[0_1px_4px_rgba(0,0,0,0.1)] rounded-md p-5">
-                <div className="flex items-center justify-between">
-                  <h2 className="font-semibold">Chọn địa chỉ giao hàng</h2>
+      <section className="py-10 bg-[#f5f7fb] min-h-screen">
+        <form onSubmit={checkout}>
+          <div className="container mx-auto flex flex-col lg:flex-row gap-10 px-5">
+            {/* LEFT COLUMN - ĐỊA CHỈ */}
+            <div className="w-full lg:w-2/3">
+              <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <div className="flex items-center justify-between mb-5">
+                  <h2 className="text-xl font-bold text-[#001F5D]">
+                    📍 Địa chỉ giao hàng
+                  </h2>
                   <Button
                     variant="outlined"
-                    className="!text-[14px]"
+                    className="!text-[14px] !border-[#001F5D] !text-[#001F5D] hover:!bg-[#001F5D] hover:!text-white"
                     onClick={() => setOpenDrawer(true)}
                   >
-                    Add new address
+                    + Thêm địa chỉ
                   </Button>
                 </div>
-                <div className="flex gap-2 flex-col mt-4">
-                  {addresses?.length > 0 ? (
-                    addresses.map((address, index) => {
-                      return (
-                        <>
-                          <label
-                            key={address._id}
-                            className="addressBox bg-[#fcfcfc] border border-dashed border-[rgba(64,55,55,0.6)] w-full flex flex-col p-3 rounded-md cursor-pointer"
-                          >
-                            {/* TAG */}
-                            <span
-                              className={
-                                "mb-2 inline-block px-2 py-1 text-[13px] rounded font-semibold tracking-wide w-fit " +
-                                (address?.addressType === "Home"
-                                  ? "bg-[#e6f7d3] text-[#44a713]" // Xanh lá nhạt
-                                  : "bg-[#fff0ce] text-[#eb7d08]") // Cam (Office)
-                              }
-                            >
-                              {address?.addressType}
-                            </span>
-                            <h4 className="flex items-center gap-10 font-semibold text-[16px] capitalize pt-1 mb-[-5px] pl-2">
-                              <span>{context?.userData?.name}</span>
-                              <span>+{address?.mobile}</span>
-                            </h4>
 
-                            <div className="flex items-center gap-2">
-                              <Radio
-                                {...label}
-                                name="address"
-                                size="small"
-                                checked={selectedValue === String(address._id)}
-                                value={String(address._id)}
-                                onChange={handleChange}
-                              />
-                              <span className="text-[16px] font-normal flex-1">
-                                {address?.address_line1}, {address?.city},{" "}
-                                {address?.state}
-                                {address?.landmark &&
-                                  address?.landmark.trim() !== "" && (
-                                    <> ({address.landmark})</>
-                                  )}
-                              </span>
-                              <FiTrash
-                                className="ml-2 mb-3 text-[33px] text-[#ff4d4f] bg-transparent rounded-full cursor-pointer p-[6px] transition duration-150 hover:bg-[#fad8d5] hover:text-[#d9363e] shadow-none"
-                                onClick={() => handleDeleteAddress(address._id)}
-                              />
-                            </div>
-                          </label>
-                        </>
-                      );
-                    })
-                  ) : (
-                    <>
-                      <div className="gap-2 py-6">
-                        <img
-                          src="/dia_chi.png"
-                          className="w-[120px] drop-shadow-lg mx-auto"
-                          alt="No Address"
-                        />
-                        <h3 className="text-xl font-bold text-[#314659] mt-2 text-center">
-                          No Addresses Found
-                        </h3>
-                        <p className="text-base text-[#7d8597] text-center">
-                          You haven&apos;t added any address yet. <br />
-                          Please add a new address to proceed.
-                        </p>
-                      </div>
-                      <button
-                        className="mt-0 bg-[#0566ef] hover:bg-[#4096ff] text-white font-semibold mx-auto px-6 py-2 rounded-lg shadow transition text-center"
-                        // onClick={handleAddAddress}
+                <div className="space-y-3">
+                  {addresses?.length > 0 ? (
+                    addresses.map((address) => (
+                      <label
+                        key={address._id}
+                        className={`group transition-all duration-300 w-full flex flex-col p-4 rounded-lg cursor-pointer border ${
+                          selectedValue === String(address._id)
+                            ? "border-[#001F5D] hover:border-[#001F5D]/40 hover:bg-gray-50 hover:shadow-[0_4px_10px_rgba(0,31,93,0.15)]"
+                            : "border-gray-200 "
+                        }`}
                       >
-                        Add Address
-                      </button>
-                    </>
+                        <span
+                          className={`px-3 py-[2px] rounded-full text-xs font-semibold w-fit mb-2 ${
+                            address?.addressType === "Home"
+                              ? "bg-green-100 text-green-700"
+                              : "bg-yellow-100 text-yellow-700"
+                          }`}
+                        >
+                          {address?.addressType}
+                        </span>
+
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Radio
+                              {...label}
+                              name="address"
+                              size="small"
+                              checked={selectedValue === String(address._id)}
+                              value={String(address._id)}
+                              onChange={handleChange}
+                            />
+                            <div>
+                              <h4 className="font-semibold text-[16px] text-gray-800">
+                                {context?.userData?.name}
+                              </h4>
+                              <p className="text-sm text-gray-600">
+                                +{address?.mobile}
+                              </p>
+                            </div>
+                          </div>
+                          <FiTrash
+                            className="text-[24px] text-gray-400 hover:text-red-500 cursor-pointer transition"
+                            onClick={() => handleDeleteAddress(address._id)}
+                          />
+                        </div>
+
+                        <p className="text-sm text-gray-700 mt-2 pl-8">
+                          {address?.address_line1}, {address?.city},{" "}
+                          {address?.state}
+                          {address?.landmark &&
+                            address?.landmark.trim() !== "" && (
+                              <> ({address.landmark})</>
+                            )}
+                        </p>
+                      </label>
+                    ))
+                  ) : (
+                    <div className="py-8 text-center text-gray-600">
+                      <img
+                        src="/dia_chi.png"
+                        alt="No Address"
+                        className="w-[120px] mx-auto mb-4 opacity-80"
+                      />
+                      <h3 className="font-bold text-lg text-gray-800">
+                        Chưa có địa chỉ giao hàng
+                      </h3>
+                      <p className="text-sm mb-4">
+                        Vui lòng thêm địa chỉ mới để tiếp tục đặt hàng.
+                      </p>
+                      <Button
+                        variant="contained"
+                        className="!bg-[#001F5D] !text-white !rounded-full px-6"
+                        onClick={() => setOpenDrawer(true)}
+                      >
+                        + Thêm địa chỉ
+                      </Button>
+                    </div>
                   )}
                 </div>
               </div>
             </div>
 
-            <div className="rightCol w-[30%]">
-              <div className="card shadow-[0_1px_4px_rgba(0,0,0,0.3)]  bg-white p-5 rounded-md">
-                <h2 className="mb-4 text-[18px] font-bold">Your Order</h2>
+            {/* RIGHT COLUMN - ĐƠN HÀNG */}
+            <div className="w-full lg:w-1/3">
+              <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <h2 className="mb-4 text-lg font-bold text-[#001F5D]">
+                  🛒 Đơn hàng của bạn
+                </h2>
 
-                <div className="flex items-center justify-between py-3 border-t border-b border-[rgba(0,0,0,0.1)]">
-                  <span className="text-[14px] font-[600]">Product</span>
-                  <span className="text-[14px] font-[600]">Subtotal</span>
+                <div className="border-y border-gray-200 py-2 font-semibold flex justify-between text-sm text-gray-600">
+                  <span>Sản phẩm</span>
+                  <span>Tạm tính</span>
                 </div>
-                <div className="scroll mb-6 max-h-[250px] overflow-y-scroll overflow-x-hidden pr-2">
-                  {context?.cartData?.length !== 0
-                    ? context?.cartData?.map((item, index) => {
-                        return (
-                          <div
-                            className="flex items-center justify-between py-3"
-                            key={index}
-                          >
-                            <div className="part1 flex items-center gap-3">
-                              <div className="img w-[50px] h-[50px] object-cover cursor-pointer">
-                                <img src={item?.image} alt="" />
-                              </div>
-                              <div className="info flex-col items-center">
-                                <h4
-                                  className="truncate text-[15px] font-semibold max-w-[190px] cursor-pointer"
-                                  title={item?.productTitle}
-                                >
-                                  {item?.productTitle?.substr(0, 20)}
-                                </h4>
-                                <span className="font-normal text-[14px]">
-                                  Số lượng: {item?.quantity}
-                                </span>
-                              </div>
-                            </div>
-                            <span className="font-semibold text-[]">
-                              {item?.subTotal}
-                            </span>
+
+                <div className="max-h-[240px] overflow-y-auto mt-3 pr-1">
+                  {context?.cartData?.length ? (
+                    context.cartData.map((item, i) => (
+                      <div
+                        key={i}
+                        className="flex justify-between items-center py-2 border-b border-gray-100"
+                      >
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={item?.image}
+                            alt={item?.productTitle}
+                            className="w-[50px] h-[50px] rounded-md object-cover"
+                          />
+                          <div>
+                            <h4 className="text-[15px] font-semibold text-gray-800 truncate max-w-[180px]">
+                              {item?.productTitle}
+                            </h4>
+                            <p className="text-xs text-gray-500">
+                              SL: {item?.quantity}
+                            </p>
                           </div>
-                        );
-                      })
-                    : "Chưa có sản phẩm nào"}
+                        </div>
+                        <span className="text-[14px] font-bold text-gray-700">
+                          {item?.subTotal?.toLocaleString()} ₫
+                        </span>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-center text-gray-500 py-5">
+                      Giỏ hàng trống
+                    </p>
+                  )}
                 </div>
 
-                <div className="flex items-center gap-3 mb-2 flex-col">
+                {/* 🎟️ MÃ GIẢM GIÁ */}
+                <VoucherSection
+                  totalAmount={totalAmount}
+                  setDiscountAmount={setDiscountAmount}
+                />
+
+                {/* Tổng cộng */}
+                <div className="mt-4 space-y-2 text-sm">
+                  <div className="flex justify-between text-gray-600">
+                    <span>Tạm tính:</span>
+                    <span>{totalAmount?.toLocaleString()} ₫</span>
+                  </div>
+
+                  <div className="flex justify-between text-gray-600">
+                    <span>Giảm giá:</span>
+                    <span className="text-green-600 font-medium">
+                      -{discountAmount?.toLocaleString()} ₫
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between text-gray-600">
+                    <span>Phí vận chuyển:</span>
+                    <span className="text-green-600 font-medium">Miễn phí</span>
+                  </div>
+
+                  <div className="flex justify-between font-bold text-[16px] text-gray-900 pt-2 border-t border-gray-200">
+                    <span>Tổng cộng:</span>
+                    <span className="text-[#f97316]">
+                      {(totalAmount - discountAmount).toLocaleString()} ₫
+                    </span>
+                  </div>
+                </div>
+
+                {/* BUTTON THANH TOÁN */}
+                <div className="mt-5">
                   <Button
-                    type="button"
-                    className="flex items-center gap-2 !py-2 !bg-green-600 group w-full"
+                    fullWidth
+                    className="!bg-[#001F5D] hover:!bg-[#0a2875] !text-white !py-3 !rounded-xl flex items-center justify-center gap-2 shadow-md"
                     onClick={() => setShowPaymentOptions(!showPaymentOptions)}
                   >
-                    <BsBagCheckFill className="text-white text-[18px] group-hover:text-black transition-all" />
-                    <span className="text-white font-bold text-[15px] pt-1 group-hover:text-black transition-all">
-                      THANH TOÁN
+                    <BsBagCheckFill className="text-[18px]" />
+                    <span className="uppercase font-semibold text-[15px]">
+                      Thanh toán
                     </span>
                   </Button>
 
-                  <div id="paypal-button-container" className="w-full"></div>
-
-                  {/* ĐỔ CỔNG THANH TOÁN Ở ĐÂY LUÔN */}
                   {showPaymentOptions && (
-                    <div
-                      className="
-                        w-full mt-2
-                        bg-white/30
-                        backdrop-blur-md
-                        rounded-xl
-                        shadow-lg
-                        flex flex-col
-                        overflow-hidden
-                        animate-fade-in
-                        border border-white/40
-                      "
-                      style={{
-                        // Nếu muốn có gradient nền glassy hơn:
-                        background:
-                          "linear-gradient(135deg, rgba(255,255,255,0.7) 40%, rgba(255,255,255,0.1) 100%)",
-                      }}
-                    >
-                      <button
-                        className="flex items-center gap-3 px-5 py-3 hover:bg-gray-100 transition text-left"
-                        onClick={() => {
-                          setShowPaymentOptions(false);
-                          checkout(event);
-                        }}
-                      >
-                        <img
-                          src="/razorpay.png"
-                          alt="Razorpay"
-                          className="w-7 h-7"
-                        />
-                        <span>Razorpay</span>
-                      </button>
-                      <button
-                        // type="button"
-                        className="flex items-center gap-3 px-5 py-3 hover:bg-gray-100 transition text-left"
-                        onClick={() => {
-                          setShowPaymentOptions(false);
-                          momoCheckout("WALLET"); // QR Code
-                        }}
-                      >
-                        <img src="/momo.webp" alt="Momo" className="w-7 h-7" />
-                        <span>Ví MoMo</span>
-                      </button>
+                    <div className="mt-4 bg-white rounded-xl shadow-inner border border-gray-100 overflow-hidden animate-fadeSlideIn">
+                      {[
+                        {
+                          img: "/razorpay.png",
+                          text: "Razorpay",
+                          action: () => checkout(event),
+                        },
+                        {
+                          img: "/momo.webp",
+                          text: "Ví MoMo",
+                          action: () => momoCheckout("WALLET"),
+                        },
+                        {
+                          img: "/momo.webp",
+                          text: "Thẻ ATM (MoMo)",
+                          action: () => momoCheckout("ATM"),
+                        },
+                        {
+                          img: "/momo.webp",
+                          text: "Thẻ tín dụng (MoMo)",
+                          action: () => momoCheckout("CC"),
+                        },
+                        {
+                          img: "/vnpay.png",
+                          text: "VNPay",
+                          action: () => vnpayCheckout(),
+                        },
+                        {
+                          img: "/paypal.png",
+                          text: "PayPal",
+                          action: () => setShowPaypalButton(true),
+                        },
+                        {
+                          img: "/cod.png",
+                          text: "Thanh toán khi nhận hàng (COD)",
+                          action: () => cashOnDelivery(),
+                        },
+                      ].map((btn, i) => (
+                        <button
+                          key={i}
+                          onClick={() => {
+                            setShowPaymentOptions(false);
+                            btn.action();
+                          }}
+                          className="flex items-center gap-3 w-full px-5 py-3 hover:bg-gray-50 transition text-left text-gray-700 font-medium"
+                        >
+                          <img
+                            src={btn.img}
+                            className="w-7 h-7 object-contain"
+                            alt={btn.text}
+                          />
+                          <span>{btn.text}</span>
+                        </button>
+                      ))}
 
-                      <button
-                        // type="button"
-                        className="flex items-center gap-3 px-5 py-3 hover:bg-gray-100 transition text-left"
-                        onClick={() => {
-                          setShowPaymentOptions(false);
-                          momoCheckout("ATM"); // Thẻ ATM nội địa
-                        }}
-                      >
-                        <img src="/momo.webp" alt="Momo" className="w-7 h-7" />
-                        <span>Thẻ ATM (MoMo)</span>
-                      </button>
-
-                      <button
-                        className="flex items-center gap-3 px-5 py-3 hover:bg-gray-100 transition text-left"
-                        onClick={() => {
-                          setShowPaymentOptions(false);
-                          momoCheckout("CC"); // Thẻ tín dụng
-                        }}
-                      >
-                        <img src="/momo.webp" alt="Momo" className="w-7 h-7" />
-                        <span>Thẻ tín dụng (Visa/Master)</span>
-                      </button>
-
-                      <button
-                        className="flex items-center gap-3 px-5 py-3 hover:bg-gray-100 transition text-left"
-                        onClick={() => {
-                          setShowPaymentOptions(false);
-                          vnpayCheckout();
-                        }}
-                      >
-                        <img src="/vnpay.png" alt="VNPay" className="w-7 h-7" />
-                        <span>VNPay</span>
-                      </button>
-                      <button
-                        className="flex items-center gap-3 px-5 py-3 hover:bg-gray-100 transition text-left"
-                        onClick={() => {
-                          setShowPaymentOptions(false);
-                          cashOnDelivery();
-                        }}
-                      >
-                        <img src="/cod.png" alt="COD" className="w-7 h-7" />
-                        <span>Thanh toán khi nhận hàng</span>
-                      </button>
+                      {/* PayPal Container */}
+                      {showPaypalButton && (
+                        <div
+                          id="paypal-button-container"
+                          className="w-full flex justify-center py-4"
+                        ></div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -656,6 +780,7 @@ const Checkout = () => {
           </div>
         </form>
       </section>
+
       {/* Drawer */}
       <AddAddressDrawer
         open={openDrawer}

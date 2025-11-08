@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import ProductItem from "../../components/ProductItem";
 import ProductItemList from "../../components/ProductItemList";
 import Sidebar from "../../components/Siderbar";
@@ -13,6 +13,7 @@ import { CiGrid2H } from "react-icons/ci";
 import { getDataFromApi, postData } from "../../utils/api";
 import LoadingSkeleton from "../../utils/LoadingSkeleton";
 import { motion, AnimatePresence } from "framer-motion";
+import { MyContext } from "../../App";
 
 const SearchPage = () => {
   const [searchParams] = useSearchParams();
@@ -31,16 +32,27 @@ const SearchPage = () => {
   const [selectedSortVal, setSelectedSortVal] = useState("Name, A to Z");
 
   const open = Boolean(anchorEl);
+  const context = useContext(MyContext);
 
   const handleClick = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
 
   useEffect(() => {
-    window.scrollTo(0,0);
+    window.scrollTo(0, 0);
     const controller = new AbortController();
 
     const fetchProducts = async () => {
       setIsLoading(true);
+
+      // Nếu có searchData từ context thì dùng nó (khi người dùng đến từ thanh search)
+      if (context?.isSearchMode && context?.searchData?.data?.length > 0) {
+        setProductData(context.searchData.data);
+        setTotalPages(context.searchData.totalPages || 1);
+        setPage(context.searchData.page || 1);
+        setIsLoading(false);
+        return;
+      }
+
       try {
         let res;
 
@@ -78,9 +90,19 @@ const SearchPage = () => {
       }
     };
 
+    if (!context?.isSearchMode) {
+      context?.setSearchData([]);
+    }
     fetchProducts();
     return () => controller.abort(); // 👈 Hủy request cũ
-  }, [catId, page]);
+  }, [
+    catId,
+    subCatId,
+    thirdSubCatId,
+    page,
+    context?.isSearchMode,
+    context?.searchData,
+  ]);
 
   const handleSortBy = (name, order, products, value) => {
     setSelectedSortVal(value);
@@ -93,6 +115,13 @@ const SearchPage = () => {
       setAnchorEl(null);
     });
   };
+
+  useEffect(() => {
+    return () => {
+      context.setIsSearchMode(false);
+      context.setSearchData([]);
+    };
+  }, []);
 
   return (
     <section className="pb-8 pt-2 bg-[#F8F8F8]">
@@ -289,7 +318,9 @@ const SearchPage = () => {
                   shape="rounded"
                   count={totalPages}
                   page={page}
-                  onChange={(e, value) => setPage(value)}
+                  onChange={(e, value) => {
+                    if (value <= totalPages) setPage(value);
+                  }}
                 />
               </div>
             )}

@@ -13,9 +13,8 @@ import { Button } from "@mui/material";
 const CartItems = ({ data }) => {
   const [sizeAnchorEl, setSizeAnchorEl] = useState(null);
   const [selectedSize, setSelectedSize] = useState(data.size);
-  const [product, setProduct] = useState(null); // Sản phẩm gốc để lấy size
+  const [product, setProduct] = useState(null);
   const [qty, setQty] = useState(data.quantity || 1);
-
   const context = useContext(MyContext);
   const openSize = Boolean(sizeAnchorEl);
 
@@ -23,183 +22,156 @@ const CartItems = ({ data }) => {
     context?.getCartItems();
   }, []);
 
-  const handleClickSize = (event) => {
-    setSizeAnchorEl(event.currentTarget);
-  };
-
+  const handleClickSize = (event) => setSizeAnchorEl(event.currentTarget);
   const handleCloseSize = (value) => {
     setSizeAnchorEl(null);
-    if (value !== null && value !== selectedSize) {
+    if (value && value !== selectedSize) {
       setSelectedSize(value);
-
-      // Cập nhật vào DB
-      editData("/api/cart/update", {
-        _id: data._id, // id của cart item (cartProduct)
-        size: value,
-      }).then((res) => {
+      editData("/api/cart/update", { _id: data._id, size: value }).then(() =>
         context.alertBox({
           status: "success",
           msg: "Cập nhật kích thước thành công!",
-        });
-      });
+        })
+      );
     }
   };
 
   const handleQtyChange = (newQty) => {
     setQty(newQty);
-
-    editData("/api/cart/update", {
-      _id: data._id, // id của cart item (cartProduct)
-      qty: newQty,
-    }).then((res) => {
+    editData("/api/cart/update", { _id: data._id, qty: newQty }).then((res) => {
       context.getCartItems();
-      if (res?.data.success === true) {
+      if (res?.data.success === true)
         context.alertBox({
           status: "success",
           msg: "Cập nhật số lượng thành công!",
         });
-      }
     });
   };
 
   const removeItem = (id) => {
     deleteData(`/api/cart/delete/${id}`).then((res) => {
-      if (res?.success === true) {
+      if (res?.success === true)
         context.alertBox({
           status: "success",
           msg: "Xóa sản phẩm thành công!",
         });
-      }
       context.getCartItems();
     });
-    
   };
 
-  // Lấy chi tiết product khi có productId
   useEffect(() => {
-    if (data?.productId) {
-      getDataFromApi(`/api/product/${data.productId}`).then((res) => {
-        setProduct(res?.data);
-      });
-    }
-    context?.getCartItems();
+    if (data?.productId)
+      getDataFromApi(`/api/product/${data.productId}`).then((res) =>
+        setProduct(res?.data)
+      );
   }, [data?.productId]);
 
   return (
-    <>
-      <div className="cartItem w-full p-3 flex items-center gap-6 relative pb-5 border-b border-[#aca8a8dd]">
-        {/* <div className="p-3"> */}
-        <div className="cart-remove-btn remove-btn">
-          <Button
-            onClick={() => removeItem(data?._id)}
-            className=" flex items-center justify-center rounded-full !bg-none transition"
-            aria-label="Remove"
-            disableRipple
-            sx={{
-              background: "none !important",
-              boxShadow: "none !important",
-              minWidth: "unset !important",
-              width: 40,
-              height: 40,
-              padding: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              transition: "background 0.18s",
-            }}
-          >
-            <IoClose className="icon hover:text-[#da0101]" />
-          </Button>
-        </div>
+    <div
+      className={`cartItem w-full flex gap-5 items-start p-4 bg-white/70 backdrop-blur-lg rounded-2xl mb-4 border border-gray-200 shadow-[0_4px_15px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_25px_rgba(0,0,0,0.08)] transition-all duration-300
+      opacity-0 translate-x-5 animate-fadeSlideIn`}
+      // style={{ animationDelay: `${index * 0.07}s` }}
+    >
+      {/* Nút xóa */}
+      <div className="absolute top-2 right-3">
+        <Button
+          onClick={() => removeItem(data?._id)}
+          className="!min-w-0 !w-[36px] !h-[36px] !rounded-full !p-0 !bg-transparent hover:!bg-red-50 transition-all"
+        >
+          <IoClose className="text-[22px] text-gray-500 hover:text-red-600 transition-all" />
+        </Button>
+      </div>
 
-        {/* </div> */}
-        <div className="img w-[11%] border-[1px] border-[#aca8a8dd] rounded-md group">
-          <Link to="/product/2299">
-            <img
-              src={data.image}
-              alt=""
-              className="w-full p-1 group-hover:scale-105"
-            />
-          </Link>
-        </div>
+      {/* Ảnh sản phẩm */}
+      <div className="img w-[95px] h-[105px] flex-shrink-0 overflow-hidden rounded-xl border border-gray-200 group">
+        <Link to={`/product/${data?.productId}`}>
+          <img
+            src={data.image}
+            alt={data.productTitle}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          />
+        </Link>
+      </div>
 
-        <div className="info w-[89%] relative">
-          <span className="brand text-[15px]">{data?.brand}</span>
-          <h3 className="font-semibold text-[17px]">
-            <Link to="" className="link">
-              {data?.productTitle}
-            </Link>
-          </h3>
+      {/* Thông tin sản phẩm */}
+      <div className="info flex-1 flex flex-col justify-between">
+        {/* Tiêu đề */}
+        <h3 className="text-[16px] font-semibold text-[#001F5D] leading-snug hover:text-[#E24C11] transition-colors">
+          <Link to={`/product/${data?.productId}`}>{data?.productTitle}</Link>
+        </h3>
 
+        {/* Thương hiệu + đánh giá */}
+        <div className="flex items-center gap-3 mt-[2px]">
+          <span className="text-[13px] text-gray-500">{data?.brand}</span>
           <Rating
             name="size-small"
             value={data?.rating}
             size="small"
             readOnly
-            className="ml-[-2px] mt-[2px]"
+            className="mt-[2px]"
           />
+        </div>
 
-          <div className="flex items-center gap-4 mt-2">
-            <div className="relative">
-              <span
-                className="flex items-center justify-center bg-[#f1f1f1] text-[12.5px] font-[600] py-1 px-2 rounded-md cursor-pointer gap-0"
-                onClick={handleClickSize}
-              >
-                Size: {selectedSize} <GoTriangleDown className="text-[16px]" />
-              </span>
+        {/* Size + Số lượng */}
+        <div className="flex items-center gap-4 mt-3">
+          <div className="relative">
+            <span
+              onClick={handleClickSize}
+              className="flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-[13px] font-semibold px-3 py-[4px] rounded-md cursor-pointer select-none transition"
+            >
+              Size: {selectedSize} <GoTriangleDown className="text-[14px]" />
+            </span>
 
-              <Menu
-                id="size-menu"
-                anchorEl={sizeAnchorEl}
-                open={openSize}
-                onClose={() => handleCloseSize(null)}
-              >
-                {(product?.size || []).map((sz) => (
-                  <MenuItem
-                    key={sz}
-                    onClick={() => handleCloseSize(sz)}
-                    selected={sz === selectedSize} // dùng prop selected của MUI MenuItem
-                    className={`px-3 py-1 cursor-pointer rounded ${
-                      sz === selectedSize
-                        ? "bg-[#001F5D] text-white font-bold"
-                        : "bg-white text-black"
-                    }`}
-                  >
-                    {sz}
-                    {sz === selectedSize && <span className="ml-2">✔</span>}
-                  </MenuItem>
-                ))}
-              </Menu>
-            </div>
-            {/* <div className="relative">
-              <span className="flex items-center justify-center bg-[#f1f1f1] text-[12.5px] font-[600] py-1 px-2 rounded-md cursor-pointer gap-0">
-                Qty: 1 <GoTriangleDown className="text-[16px]" />
-              </span>
-            </div> */}
-            <div className="relative">
-              <QtyBoxCart
-                value={qty}
-                min={1}
-                max={data.countInStock}
-                onChange={handleQtyChange}
-              />
-            </div>
+            <Menu
+              anchorEl={sizeAnchorEl}
+              open={openSize}
+              onClose={() => handleCloseSize(null)}
+            >
+              {(product?.size || []).map((sz) => (
+                <MenuItem
+                  key={sz}
+                  onClick={() => handleCloseSize(sz)}
+                  selected={sz === selectedSize}
+                  className={`px-3 py-0 rounded ${
+                    sz === selectedSize
+                      ? "!bg-[#001F5D] !text-white font-semibold"
+                      : "text-gray-800 hover:!bg-gray-100"
+                  }`}
+                >
+                  {sz}
+                  {sz === selectedSize && <span className="ml-2">✔</span>}
+                </MenuItem>
+              ))}
+            </Menu>
           </div>
 
-          <div className="flex items-center gap-3 mt-3">
-            <span className="price text-green-800 text-[16px] font-[700]">
-              {data?.price?.toLocaleString() || "0"},000
+          {/* Số lượng */}
+          <QtyBoxCart
+            value={qty}
+            min={1}
+            max={data.countInStock}
+            onChange={handleQtyChange}
+          />
+        </div>
+
+        {/* Giá */}
+        <div className="flex items-center gap-3 mt-3">
+          <span className="text-[16px] font-semibold text-black">
+            {Number(data?.price).toLocaleString("vi-VN")}₫
+          </span>
+          {data?.oldPrice && (
+            <span className="line-through text-gray-400 text-[15px]">
+              {Number(data?.oldPrice).toLocaleString("vi-VN")}₫
             </span>
-            <span className="oldPrice line-through text-gray-500 text-[15px] font-[500]">
-              {data?.oldPrice?.toLocaleString() || ""}
-            </span>
-            <span className="discount flex items-center px-2 py-[1px] bg-[#FF0000] rounded-2xl text-[13px] text-white font-semibold">
+          )}
+          {data.discount > 0 && (
+            <span className="bg-[#FF4B4B] text-white text-[12.5px] font-semibold px-2 py-[1px] rounded-full">
               -{data.discount}%
             </span>
-          </div>
+          )}
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

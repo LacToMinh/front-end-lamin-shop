@@ -122,7 +122,7 @@ const thirdSubCatId = searchParams.get("thirdSubCatId");
   return (
     <section className="pb-8 pt-2 bg-[#F8F8F8]">
       {/* 🔹 Breadcrumb */}
-      <div className="px-[74px] p-0 sticky top-[140px]">
+      <div className="container sticky top-[140px]">
         <Breadcrumbs aria-label="breadcrumb" className="text-black">
           <Link
             underline="hover"
@@ -149,7 +149,7 @@ const thirdSubCatId = searchParams.get("thirdSubCatId");
           {/* 🔸 Sidebar */}
           <div
             className={`sidebarWrapper sticky top-[180px] h-fit ${
-              isItemView === "grid" ? "w-[15%] h-full bg-white" : "w-[15%]"
+              isItemView === "grid" ? "w-[18%] h-full" : "w-[18%]"
             }`}
           >
             <Sidebar
@@ -169,7 +169,7 @@ const thirdSubCatId = searchParams.get("thirdSubCatId");
             }`}
           >
             {/* Header: Sort + View mode */}
-            <div className="w-full bg-[#E5E5E5] py-1 mb-0 rounded-sm flex items-center justify-between !sticky !top-[138px] z-20">
+            <div className="w-full bg-[#E5E5E5] py-1 mb-0 rounded-sm flex items-center justify-between z-20">
               <div className="col1 flex items-center pl-2 group">
                 <Button
                   className="!w-[40px] !h-[40px] !min-w-[40px] !text-[#000] !rounded-full gap-1"

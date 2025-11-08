@@ -72,7 +72,7 @@ const Home = () => {
             </div>
 
             {/* right section */}
-            <div className="rightSec w-[55%]">
+            <div className="rightSec w-[55%] flex justify-end">
               <Tabs
                 value={value}
                 onChange={handleChange}
@@ -87,6 +87,7 @@ const Home = () => {
                         label={cat?.name}
                         key={index}
                         onClick={() => filterCatById(cat?._id)}
+                        className="!text-black"
                       />
                     );
                   })}
@@ -127,14 +128,22 @@ const Home = () => {
       <section className="">
         <div className="container">
           <h2 className="text-[22px] font-[600]">Sản phẩm mới nhất</h2>
-          <ProductsSlider items={5} />
+          {popularProductData?.length !== 0 ? (
+            <ProductsSlider count={5} data={popularProductData} />
+          ) : (
+            "Chưa có sản phẩm"
+          )}
         </div>
       </section>
 
       <section className="py-5">
         <div className="container">
           <h2 className="text-[20px] font-[600]">Sản phẩm mới nhất</h2>
-          <ProductsSlider items={5} />
+          {popularProductData?.length !== 0 ? (
+            <ProductsSlider count={5} data={popularProductData} />
+          ) : (
+            "Chưa có sản phẩm"
+          )}
         </div>
       </section>
 
