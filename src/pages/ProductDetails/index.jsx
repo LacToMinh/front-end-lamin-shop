@@ -1,12 +1,25 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Breadcrumbs from "@mui/material/Breadcrumbs";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import ProductZoom from "../../components/ProductZoom";
 import ProductsSlider from "../../components/ProductsSilder";
-import ProductDetailsComponent from "../../components/ProductDetails"
+import ProductDetailsComponent from "../../components/ProductDetails";
+import { MyContext } from "../../App";
+import { getDataFromApi } from "../../utils/api";
 
 export const ProductDetails = () => {
   const [activeTab, SetActiveTab] = useState(0);
+  const [productData, setProductData] = useState();
+  const { id } = useParams();
+  useEffect(() => {
+    getDataFromApi(`/api/product/${id}`).then((res) => {
+      if (res?.error === false) {
+        setProductData(res?.data);
+        console.log(res.data);
+      }
+    });
+    window.scrollTo(0, 0);
+  }, [id]);
 
   return (
     <>
@@ -43,11 +56,11 @@ export const ProductDetails = () => {
         <section className="bg-white py-5">
           <div className="container_2 flex gap-4">
             <div className="productZoomContainer flex justify-between w-[50%] h-[60vh] overflow-hidden">
-              <ProductZoom />
+              <ProductZoom images={productData?.images} />
             </div>
 
             <div className="productContent w-[50%]">
-              <ProductDetailsComponent />
+              <ProductDetailsComponent data={productData} />
             </div>
           </div>
 

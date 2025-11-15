@@ -255,7 +255,7 @@ const Checkout = () => {
             userId: user?._id,
             products: context?.cartData,
             paymentId: paymentId,
-            payment_status: "COMPLETED",
+            payment_status: "Đã thanh toán",
             delivery_address: selectedValue,
             totalAmt: totalAmount - discountAmount,
             voucherCode: voucherCode,
@@ -341,7 +341,7 @@ const Checkout = () => {
             const info = {
               userId: user?._id,
               products: context?.cartData,
-              payment_status: "COMPLETED",
+              payment_status: "Đã thanh toán",
               delivery_address: selectedValue,
               totalAmount: totalAmount,
               date: new Date().toLocaleString("en-US", {
@@ -388,7 +388,7 @@ const Checkout = () => {
       userId: user?._id,
       products: context?.cartData,
       paymentId: "",
-      payment_status: "CASH ON DELIVERY",
+      payment_status: "Thanh toán khi nhận hàng",
       delivery_address: selectedValue,
       totalAmt: totalAmount,
       date: new Date().toLocaleString("en-US", {

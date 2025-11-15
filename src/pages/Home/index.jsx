@@ -13,11 +13,16 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import BlogItem from "../../components/BlogItem";
 import { getDataFromApi } from "../../utils/api";
 import { MyContext } from "../../App";
+import CollectionShowcase from "../../components/CollectionShowcase";
 
 const Home = () => {
   const [value, setValue] = React.useState(0);
   const [homeSlidesData, setHomeSlidesData] = useState([]);
-  const [popularProductData, setPopularProductData] = useState([]);
+
+  const [hotProducts, setHotProducts] = useState([]);
+  const [newProducts, setNewProducts] = useState([]);
+  const [specialProducts, setSpecialProducts] = useState([]);
+
   const context = useContext(MyContext);
 
   useEffect(() => {
@@ -28,11 +33,27 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
+    if (!context.catData[0]?._id) return;
+
     getDataFromApi(
       `/api/product/getAllProductsByCatId/${context?.catData[0]?._id}`
     ).then((res) => {
       if (res?.error === false) {
-        setPopularProductData(res?.data);
+        const allProducts = res?.data;
+
+        const hotProducts = allProducts.filter(
+          (product) => product.isHot === true
+        );
+        const newProducts = allProducts.filter(
+          (product) => product.isNew === true
+        );
+        const specialProducts = allProducts.filter(
+          (product) => product.isSpecial === true
+        );
+
+        setHotProducts(hotProducts);
+        setNewProducts(newProducts);
+        setSpecialProducts(specialProducts);
       }
     });
   }, [context?.catData]);
@@ -44,13 +65,40 @@ const Home = () => {
     setValue(newValue);
   };
 
-  const filterCatById = (id) => {
-    getDataFromApi(`/api/product/getAllProductsByCatId/${id}`).then((res) => {
-      if (res?.error === false) {
-        setPopularProductData(res?.data);
+  const filterCatById = (catId, type) => {
+    getDataFromApi(`/api/product/getAllProductsByCatId/${catId}`).then(
+      (res) => {
+        if (res?.error === false) {
+          let filtered = res.data;
+
+          // 🔥 Lọc theo loại (new, hot, special)
+          if (type === "hot") filtered = filtered.filter((p) => p.isHot);
+          if (type === "new") filtered = filtered.filter((p) => p.isNew);
+          if (type === "special")
+            filtered = filtered.filter((p) => p.isSpecial);
+
+          // Gán lại data cho từng khu vực
+          if (type === "hot") setHotProducts(filtered);
+          if (type === "new") setNewProducts(filtered);
+          if (type === "special") setSpecialProducts(filtered);
+        }
       }
-    });
+    );
   };
+
+  const [collections, setCollections] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const res = await getDataFromApi("/api/collection/getAll");
+      if (res.success) setCollections(res.data);
+    };
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    window.scrollTo(0,0);
+  }, [])
 
   return (
     <>
@@ -59,6 +107,14 @@ const Home = () => {
       {context?.catData?.length !== 0 && (
         <HomeCatSlider data={context?.catData} />
       )}
+
+      <section className="my-1 pt-2 bg-white">
+        <div className="container">
+          {collections.map((col, i) => (
+            <CollectionShowcase key={col._id} collection={col} />
+          ))}
+        </div>
+      </section>
 
       <section className="my-1 pt-2 bg-white">
         <div className="container">
@@ -86,7 +142,7 @@ const Home = () => {
                       <Tab
                         label={cat?.name}
                         key={index}
-                        onClick={() => filterCatById(cat?._id)}
+                        onClick={() => filterCatById(cat?._id, "special")}
                         className="!text-black"
                       />
                     );
@@ -94,8 +150,8 @@ const Home = () => {
               </Tabs>
             </div>
           </div>
-          {popularProductData?.length !== 0 ? (
-            <ProductsSlider count={5} data={popularProductData} />
+          {specialProducts?.length !== 0 ? (
+            <ProductsSlider count={5} data={specialProducts} />
           ) : (
             "Chưa có sản phẩm"
           )}
@@ -125,50 +181,113 @@ const Home = () => {
         <AdsBannerSlider items={4} />
       </section>
 
-      <section className="">
+      <section className="my-1 pt-2 bg-white">
         <div className="container">
-          <h2 className="text-[22px] font-[600]">Sản phẩm mới nhất</h2>
-          {popularProductData?.length !== 0 ? (
-            <ProductsSlider count={5} data={popularProductData} />
+          <div className="flex items-center justify-between">
+            {/* left section */}
+            <div className="leftSec">
+              <h3 className="text-[22px] font-semibold">Sản phẩm bán chạy</h3>
+              <p className="text-[15px] font-normal">
+                Các sản phẩm bán chạy nhất trong tháng
+              </p>
+            </div>
+
+            {/* right section */}
+            <div className="rightSec w-[55%] flex justify-end">
+              <Tabs
+                value={value}
+                onChange={handleChange}
+                variant="scrollable"
+                scrollButtons="auto"
+                aria-label="scrollable auto tabs example"
+              >
+                {context?.catData?.length !== 0 &&
+                  context?.catData?.map((cat, index) => {
+                    return (
+                      <Tab
+                        label={cat?.name}
+                        key={index}
+                        onClick={() => filterCatById(cat?._id, "hot")}
+                        className="!text-black"
+                      />
+                    );
+                  })}
+              </Tabs>
+            </div>
+          </div>
+          {hotProducts?.length !== 0 ? (
+            <ProductsSlider count={5} data={hotProducts} />
           ) : (
             "Chưa có sản phẩm"
           )}
         </div>
       </section>
 
-      <section className="py-5">
+      <section className="my-1 pt-2 bg-white">
         <div className="container">
-          <h2 className="text-[20px] font-[600]">Sản phẩm mới nhất</h2>
-          {popularProductData?.length !== 0 ? (
-            <ProductsSlider count={5} data={popularProductData} />
+          <div className="flex items-center justify-between">
+            {/* left section */}
+            <div className="leftSec">
+              <h3 className="text-[22px] font-semibold">Sản phẩm mới nhất</h3>
+              <p className="text-[15px] font-normal">
+                Đón đầu xu hướng với các sản phẩm mới nhất
+              </p>
+            </div>
+
+            {/* right section */}
+            <div className="rightSec w-[55%] flex justify-end">
+              <Tabs
+                value={value}
+                onChange={handleChange}
+                variant="scrollable"
+                scrollButtons="auto"
+                aria-label="scrollable auto tabs example"
+              >
+                {context?.catData?.length !== 0 &&
+                  context?.catData?.map((cat, index) => {
+                    return (
+                      <Tab
+                        label={cat?.name}
+                        key={index}
+                        onClick={() => filterCatById(cat?._id, "new")}
+                        className="!text-black"
+                      />
+                    );
+                  })}
+              </Tabs>
+            </div>
+          </div>
+          {newProducts?.length !== 0 ? (
+            <ProductsSlider count={5} data={newProducts} />
           ) : (
             "Chưa có sản phẩm"
           )}
         </div>
       </section>
 
-      <section className="blogSection py-5 container pb-8">
-        <div className="">
+      <section className="blogSection py-5 bg-white w-full">
+        {/* Với sm trở lên: container, nhỏ hơn thì full */}
+        <div className="w-full px-4 sm:container sm:mx-auto sm:px-6 sm:max-w-screen-2xl">
           <h2 className="text-[22px] font-[600] mb-4">Các bài viết nổi bật</h2>
+
           <Swiper
-            slidesPerView={3}
-            spaceBetween={30}
-            navigation={true}
+            navigation
             modules={[Navigation]}
+            spaceBetween={20}
+            breakpoints={{
+              320: { slidesPerView: 1 },
+              480: { slidesPerView: 1.2 },
+              640: { slidesPerView: 2 },
+              768: { slidesPerView: 3 },
+              1280: { slidesPerView: 4 },
+            }}
             className="blogSlider"
           >
-            <SwiperSlide>
-              <BlogItem />
-            </SwiperSlide>
-            <SwiperSlide>
-              <BlogItem />
-            </SwiperSlide>
-            <SwiperSlide>
-              <BlogItem />
-            </SwiperSlide>
-            <SwiperSlide>
-              <BlogItem />
-            </SwiperSlide>
+            {[1, 2, 3, 4].map((_, i) => (
+              <SwiperSlide key={i}>
+                <BlogItem />
+              </SwiperSlide>
+            ))}
           </Swiper>
         </div>
       </section>

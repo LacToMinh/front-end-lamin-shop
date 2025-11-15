@@ -30,6 +30,8 @@ import Orders from "./pages/Orders";
 import TryOnPage from "./pages/TryOn";
 import SearchPage from "./pages/Search";
 import ChatBox from "./pages/Chat";
+import OrderDetails from "./pages/OrderDetails";
+import ClientChat from "./pages/Chat";
 
 const alertBox = ({ status, msg }) => {
   if (status === "success") toast.success(msg);
@@ -53,6 +55,7 @@ function App() {
   const [justLoggedOut, setJustLoggedOut] = useState(false);
   const [searchData, setSearchData] = useState([]);
   const [isSearchMode, setIsSearchMode] = useState(false);
+  const [product, setProduct] = useState([]);
 
   // const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -160,6 +163,8 @@ function App() {
     });
   };
 
+
+
   const values = {
     setOpenProductDetailsModal,
     handleOpenProductDetailsModal,
@@ -208,6 +213,7 @@ function App() {
           <Route path={"/cart"} element={<CartPage />} />
           <Route path={"/checkout"} element={<Checkout />} />
           <Route path={"/my-orders"} element={<Orders />} />
+          <Route path={"/order-details/:id"} element={<OrderDetails />} />
           <Route path={"/order/success"} element={<OrderSuccess />} />
           <Route path={"/verify"} element={<Verify />} />
           <Route path={"/my-account"} element={<MyAccount />} />
@@ -216,6 +222,7 @@ function App() {
           <Route path={"/search"} element={<SearchPage />} />
           <Route path={"/chat"} element={<ChatBox />} />
         </Routes>
+        <ClientChat />
         <Footer />
 
         <Dialog

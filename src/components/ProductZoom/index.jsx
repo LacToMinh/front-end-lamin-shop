@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import InnerImageZoom from "react-inner-image-zoom";
 import "react-inner-image-zoom/lib/styles.min.css";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
 import { Navigation, Controller } from "swiper/modules";
+import { MyContext } from "../../App";
 
-const ProductZoom = ({ images }) => {
+const ProductZoom = ({images}) => {
   const [thumbSwiper, setThumbSwiper] = useState(null);
   const [mainSwiper, setMainSwiper] = useState(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -27,24 +28,24 @@ const ProductZoom = ({ images }) => {
             className="zoomProductSliderThumbs h-full"
             watchSlidesProgress
           >
-            {images?.map((img, index) => (
-              <SwiperSlide key={index}>
-                <div
-                  className={`item w-full cursor-pointer border-[2px] rounded-md overflow-hidden transition-all duration-200 group ${
-                    index === activeIndex
-                      ? "border-[#001F5D]"
-                      : "border-transparent"
-                  }`}
-                >
-                  <img
-                    src={img}
-                    alt={`thumb-${index}`}
-                    className="w-full object-cover group-hover:scale-105 transition-all duration-200"
-                    onClick={() => mainSwiper?.slideTo(index)} // click thumbnail chuyển main
-                  />
-                </div>
-              </SwiperSlide>
-            ))}
+              {images?.map((img, index) => (
+                <SwiperSlide key={index}>
+                  <div
+                    className={`item w-full cursor-pointer border-[2px] rounded-md overflow-hidden transition-all duration-200 group ${
+                      index === activeIndex
+                        ? "border-[#001F5D]"
+                        : "border-transparent"
+                    }`}
+                  >
+                    <img
+                      src={img}
+                      alt={`thumb-${index}`}
+                      className="w-full object-cover group-hover:scale-105 transition-all duration-200"
+                      onClick={() => mainSwiper?.slideTo(index)} // click thumbnail chuyển main
+                    />
+                  </div>
+                </SwiperSlide>
+              ))}
           </Swiper>
         </div>
 
@@ -59,7 +60,7 @@ const ProductZoom = ({ images }) => {
             modules={[Navigation, Controller]}
             className="zoomProductMain w-full h-full"
           >
-            {images.map((img, index) => (
+            {images?.map((img, index) => (
               <SwiperSlide key={index}>
                 <InnerImageZoom
                   zoomType="hover"

@@ -4,7 +4,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { MyContext } from "../../App";
 import { getDataFromApi, uploadImage } from "../../utils/api";
 import { MdCloudUpload } from "react-icons/md";
-import { FaAngleDown, FaAngleUp, FaRegHeart, FaRegUser } from "react-icons/fa";
+import { FaAngleDown, FaAngleUp, FaEye, FaRegHeart, FaRegUser } from "react-icons/fa";
 import { TbMapPinPlus } from "react-icons/tb";
 import { LuShoppingBag } from "react-icons/lu";
 import { AiOutlineLogout } from "react-icons/ai";
@@ -34,9 +34,14 @@ const Orders = () => {
     confirmPassword: "",
   });
 
+  const [openIndex, setOpenIndex] = useState(null);
+  // const toggleOrder = (idx) => setOpenIndex(openIndex === idx ? null : idx);
+
   const toggleOrder = (index) => {
-    setIsOpenOrderProduct((prev) => (prev === index ? null : index));
+    setOpenIndex((prev) => (prev === index ? null : index));
   };
+
+  const handleViewOrder = (orderId) => navigate(`/order-details/${orderId}`);
 
   useEffect(() => {
     getDataFromApi("/api/order/order-list").then((res) => {
@@ -129,9 +134,9 @@ const Orders = () => {
   };
   return (
     <section className="py-10 w-full">
-      <div className="container_2 flex gap-8 !py-2">
-        <div className="col1 w-[20%]">
-          <div className="card bg-white shadow-[0_1px_8px_rgba(0,0,0,0.3)] rounded-md p-0">
+      <div className="container gap-8 flex !py-2">
+        <div className="col1 w-[18%]">
+          <div className="card bg-white shadow-[0_1px_8px_rgba(0,0,0,0.3)] rounded-xl p-0">
             <div className="w-full p-2 flex items-center justify-center flex-col pb-8 pt-6">
               <div className="w-[100px] h-[100px] rounded-full overflow-hidden border border-black mb-3 relative group flex items-center justify-center bg-gray-100">
                 {upLoading === true ? (
@@ -249,114 +254,164 @@ const Orders = () => {
         </div>
 
         <div className="col2 w-[80%]">
-          <div className="card bg-white p-5 shadow-[0_1px_8px_rgba(0,0,0,0.3)] rounded-md">
-            <h2>My Orders</h2>
-            <p className="mt-0 mb-0">
-              There are <span className="font-bold text-red-500">2</span> orders
-            </p>
+          <div className="mx-auto bg-white rounded-xl shadow-[0_1px_8px_rgba(0,0,0,0.3)] p-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-[#001F5D] mb-2">
+                Đơn hàng của tôi
+              </h2>
+              <p className="text-gray-500">
+                Bạn có{" "}
+                <span className="text-[#001F5D] font-semibold">
+                  {orders?.length || 0}
+                </span>{" "}
+                đơn hàng.
+              </p>
+            </div>
 
-            <div className="relative overflow-x-auto shadow-md sm:rounded-lg">
-              <table className="w-full text-sm text-left text-gray-500 border border-gray-300">
-                <thead className=" uppercase">
-                  <tr className="border-b border-gray-300">
-                    <th className="px-6 py-3 w-12 border-gray-300"></th>
-                    <th className="px-6 py-3">Order ID</th>
-                    <th className="px-6 py-3">Payment ID</th>
-                    <th className="px-6 py-3">Name</th>
-                    <th className="px-6 py-3">Phone Number</th>
-                    <th className="px-6 py-3">Address</th>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-sm text-gray-700">
+                <thead className="bg-[#f0f4fa] text-[#001F5D] text-[13px] uppercase font-bold">
+                  <tr>
+                    <th className="p-3 w-[50px]"></th>
+                    <th className="p-3 text-left">Tên người dùng</th>
+                    <th className="p-3 text-left">Email</th>
+                    <th className="p-3 text-left">Ngày đặt</th>
+                    <th className="p-3 text-left">Trạng thái</th>
+                    <th className="p-3 text-left">Thanh toán</th>
+                    <th className="p-3 text-left">Tổng tiền</th>
+                    <th className="p-3 text-left">Chi tiết</th>
                   </tr>
                 </thead>
 
                 <tbody>
-                  {orders.data?.length !== 0 &&
-                    orders.map((o, idx) => (
-                      <React.Fragment key={o.orderId + idx}>
-                        <tr className="border-b border-gray-300">
-                          <td className="px-1 py-4 flex justify-center">
-                            <button
-                              onClick={() => toggleOrder(idx)}
-                              className="w-8 h-8 rounded-full border flex items-center justify-center hover:shadow-sm"
-                              aria-label={
-                                isOpenOrderProduct === idx
-                                  ? "collapse"
-                                  : "expand"
-                              }
-                            >
-                              {isOpenOrderProduct === idx ? (
-                                <FaAngleUp />
-                              ) : (
-                                <FaAngleDown />
-                              )}
-                            </button>
-                          </td>
-
-                          <th
-                            scope="row"
-                            className="px-2 py-4 font-medium text-gray-900 whitespace-nowrap text-sm"
+                  {orders.map((o, idx) => (
+                    <React.Fragment key={idx}>
+                      <tr className="border-b border-gray-200 hover:bg-[#f8fbff] transition">
+                        <td className="text-center">
+                          <button
+                            onClick={() => toggleOrder(idx)}
+                            className="w-7 h-7 rounded-full border border-[#001F5D] flex items-center justify-center text-[#001F5D] hover:bg-[#001F5D] hover:text-white transition-all"
                           >
-                            {o._id}
-                          </th>
+                            {openIndex === idx ? (
+                              <FaAngleUp />
+                            ) : (
+                              <FaAngleDown />
+                            )}
+                          </button>
+                        </td>
+                        <td className="p-4 font-medium">{o.user?.name}</td>
+                        <td className="p-4">{o.user?.email}</td>
+                        <td className="p-4">
+                          {new Date(o.createdAt).toLocaleString("vi-VN", {
+                            hour12: false,
+                          })}
+                        </td>
 
-                          <td className="px-1 py-0 text-sm border border-gray-300">{o.paymentId}</td>
-                          <td className="px-2 py-0 text-sm border border-gray-300 truncate max-w-[200px]">{o.user?.name}</td>
-                          <td className="px-2 py-0 text-sm border border-gray-300">{o?.delivery_address?.mobile}</td>
-                          <td className="px-2 py-0 text-sm border border-gray-300">{o?.delivery_address?.address_line1}, {o?.delivery_address?.city}, {o?.delivery_address?.state} - <span className="font-medium">{o?.delivery_address?.landmark}</span> </td>
-                        </tr>
+                        {/* Trạng thái đơn */}
+                        <td className="p-3">
+                          <span
+                            className={`px-3 py-[6px] rounded-full font-semibold text-xs border 
+                        ${
+                          o.order_status === "pending"
+                            ? "bg-[rgba(250,173,20,0.15)] text-[#d48806] border-[rgba(250,173,20,0.3)]"
+                            : o.order_status === "confirmed"
+                            ? "bg-[rgba(24,144,255,0.15)] text-[#096dd9] border-[rgba(24,144,255,0.3)]"
+                            : o.order_status === "shipping"
+                            ? "bg-[rgba(114,46,209,0.15)] text-[#722ed1] border-[rgba(114,46,209,0.3)]"
+                            : o.order_status === "completed"
+                            ? "bg-[rgba(82,196,26,0.15)] text-[#237804] border-[rgba(82,196,26,0.3)]"
+                            : "bg-[rgba(255,77,79,0.15)] text-[#a8071a] border-[rgba(255,77,79,0.3)]"
+                        }`}
+                          >
+                            {o.order_status === "pending"
+                              ? "Chờ xác nhận"
+                              : o.order_status === "confirmed"
+                              ? "Đã xác nhận"
+                              : o.order_status === "shipping"
+                              ? "Đang giao hàng"
+                              : o.order_status === "completed"
+                              ? "Hoàn tất đơn hàng"
+                              : "Hủy đơn hàng"}
+                          </span>
+                        </td>
 
-                        {/* expanded detail: render một bảng con với header PRODUCT ID | PRODUCT TITLE | IMAGE | QUANTITY | PRICE */}
-                        {isOpenOrderProduct === idx && (
-                          <tr className="bg-gray-50">
-                            <td />
-                            <td colSpan={5} className="px-1 py-4">
-                              <div className="overflow-x-auto">
-                                <table className="w-full text-sm text-left text-gray-600">
-                                  <thead className=" uppercase border-b">
-                                    <tr>
-                                      <th className="px-0 py-3">Product ID</th>
-                                      <th className="px-4 py-3">
-                                        Product Title
-                                      </th>
-                                      <th className="px-4 py-3">Image</th>
-                                      <th className="px-4 py-3">Quantity</th>
-                                      <th className="px-4 py-3">Price</th>
+                        {/* Trạng thái thanh toán */}
+                        <td className="p-3">
+                          <span
+                            className={`px-3 py-[6px] rounded-full font-semibold text-xs border 
+                        ${
+                          o.payment_status === "Đã thanh toán"
+                            ? "bg-[rgba(82,196,26,0.15)] text-[#237804] border-[rgba(82,196,26,0.3)]"
+                            : "bg-[rgba(255,77,79,0.15)] text-[#a8071a] border-[rgba(255,77,79,0.3)]"
+                        }`}
+                          >
+                            {o.payment_status}
+                          </span>
+                        </td>
+
+                        <td className="p-3 font-semibold text-[#001F5D]">
+                          {o.totalAmt?.toLocaleString("vi-VN")} ₫
+                        </td>
+
+                        <td className="text-center">
+                      <button
+                        onClick={() => handleViewOrder(o._id)}
+                        className="inline-flex items-center gap-2 text-[#001F5D] font-medium border border-[#001F5D] px-3 py-[4px] rounded-full hover:bg-[#001F5D] hover:text-white transition-all"
+                      >
+                        <FaEye className="text-[14px]" />
+                        Xem
+                      </button>
+                    </td>
+                      </tr>
+
+                      {openIndex === idx && (
+                        <tr className="bg-[#f9fafc]">
+                          <td />
+                          <td colSpan={6} className="p-4">
+                            <div className="overflow-x-auto">
+                              <table className="w-full border border-gray-200 text-sm">
+                                <thead className="bg-white text-[#001F5D] uppercase text-[12px] border-b border-gray-200">
+                                  <tr>
+                                    <th className="p-3 text-left">
+                                      Product ID
+                                    </th>
+                                    <th className="p-3 text-left">Title</th>
+                                    <th className="p-3 text-left">Image</th>
+                                    <th className="p-3 text-left">Qty</th>
+                                    <th className="p-3 text-left">Price</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {o.products.map((p, i) => (
+                                    <tr
+                                      key={i}
+                                      className="border-b border-gray-100 hover:bg-gray-50 transition"
+                                    >
+                                      <td className="p-3">{p.productId}</td>
+                                      <td className="p-3 truncate">
+                                        {p.productTitle}
+                                      </td>
+                                      <td className="p-3">
+                                        <img
+                                          src={p.image}
+                                          alt={p.productTitle}
+                                          className="w-10 h-10 object-cover rounded-md border"
+                                        />
+                                      </td>
+                                      <td className="p-3">{p.quantity}</td>
+                                      <td className="p-3">
+                                        {p.price.toLocaleString("vi-VN")} ₫
+                                      </td>
                                     </tr>
-                                  </thead>
-                                  <tbody>
-                                    {o.products.map((p, pidx) => (
-                                      <tr
-                                        key={p.productId + pidx}
-                                        className="border border-gray-300"
-                                      >
-                                        <td className="px-1 py-3 break-words border border-gray-300">
-                                          {p.productId}
-                                        </td>
-                                        <td className="px-2 py-3 truncate max-w-[300px] border border-gray-300">
-                                          {p.productTitle}
-                                        </td>
-                                        <td className="px-2 py-3 border border-gray-300">
-                                          <img
-                                            src={p.image}
-                                            alt={p.productTitle}
-                                            className="w-10 h-10 object-cover rounded-md"
-                                          />
-                                        </td>
-                                        <td className="px-4 py-3 border border-gray-300">
-                                          {p.quantity}
-                                        </td>
-                                        <td className="px-4 py-3 ">
-                                          <span>{p.price},000</span>
-                                        </td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
-                            </td>
-                          </tr>
-                        )}
-                      </React.Fragment>
-                    ))}
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  ))}
                 </tbody>
               </table>
             </div>

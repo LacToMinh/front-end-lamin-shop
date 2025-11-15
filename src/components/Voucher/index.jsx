@@ -15,7 +15,10 @@ const VoucherSection = ({ totalAmount, setDiscountAmount }) => {
   const fetchVouchers = async () => {
     try {
       const res = await getDataFromApi("/api/voucher/list");
+      //  console.log("🎯 All vouchers:", res.data);
       if (res.success) {
+        console.log("🔎 Raw voucher data:", res.data);
+
         const active = res.data.filter(
           (v) =>
             v.isActive &&

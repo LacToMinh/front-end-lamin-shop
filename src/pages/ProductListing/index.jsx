@@ -18,7 +18,7 @@ const ProductListing = () => {
   const [searchParams] = useSearchParams();
   const catId = searchParams.get("catId");
   const subCatId = searchParams.get("subCatId");
-const thirdSubCatId = searchParams.get("thirdSubCatId");
+  const thirdSubCatId = searchParams.get("thirdSubCatId");
 
   const [isItemView, setIsItemView] = useState("grid");
   const [anchorEl, setAnchorEl] = useState(null);
@@ -38,70 +38,44 @@ const thirdSubCatId = searchParams.get("thirdSubCatId");
   useEffect(() => {
     const controller = new AbortController();
 
-    // const fetchProducts = async () => {
-    //   setIsLoading(true);
-    //   try {
-    //     let res;
-    //     if (catId) {
-    //       res = await getDataFromApi(
-    //         `/api/product/getAllProductsByCatId/${catId}?page=${page}`,
-    //         { signal: controller.signal }
-    //       );
-    //     } else {
-    //       res = await getDataFromApi(
-    //         `/api/product/getAllProducts?page=${page}`,
-    //         {
-    //           signal: controller.signal,
-    //         }
-    //       );
-    //     }
+    const fetchProducts = async () => {
+      setIsLoading(true);
+      try {
+        let res;
 
-    //     setProductData(res?.data || []);
-    //     setTotalPages(res?.totalPages || 1);
-    //     setPage(res?.page || 1);
-    //   } catch (error) {
-    //     if (error.name !== "AbortError") console.error("❌ Fetch lỗi:", error);
-    //   } finally {
-    //     setIsLoading(false);
-    //   }
-    // };
+        if (thirdSubCatId) {
+          res = await getDataFromApi(
+            `/api/product/getAllProductsByThirdSubCatId/${thirdSubCatId}?page=${page}`,
+            { signal: controller.signal }
+          );
+        } else if (subCatId) {
+          res = await getDataFromApi(
+            `/api/product/getAllProductsBySubCatId/${subCatId}?page=${page}`,
+            { signal: controller.signal }
+          );
+        } else if (catId) {
+          res = await getDataFromApi(
+            `/api/product/getAllProductsByCatId/${catId}?page=${page}`,
+            { signal: controller.signal }
+          );
+        } else {
+          res = await getDataFromApi(
+            `/api/product/getAllProducts?page=${page}`,
+            {
+              signal: controller.signal,
+            }
+          );
+        }
 
-  const fetchProducts = async () => {
-  setIsLoading(true);
-  try {
-    let res;
-
-    if (thirdSubCatId) {
-      res = await getDataFromApi(
-        `/api/product/getAllProductsByThirdSubCatId/${thirdSubCatId}?page=${page}`,
-        { signal: controller.signal }
-      );
-    } else if (subCatId) {
-      res = await getDataFromApi(
-        `/api/product/getAllProductsBySubCatId/${subCatId}?page=${page}`,
-        { signal: controller.signal }
-      );
-    } else if (catId) {
-      res = await getDataFromApi(
-        `/api/product/getAllProductsByCatId/${catId}?page=${page}`,
-        { signal: controller.signal }
-      );
-    } else {
-      res = await getDataFromApi(`/api/product/getAllProducts?page=${page}`, {
-        signal: controller.signal,
-      });
-    }
-
-    setProductData(res?.data || []);
-    setTotalPages(res?.totalPages || 1);
-    setPage(res?.page || 1);
-  } catch (error) {
-    if (error.name !== "AbortError") console.error("❌ Fetch lỗi:", error);
-  } finally {
-    setIsLoading(false);
-  }
-};
-
+        setProductData(res?.data || []);
+        setTotalPages(res?.totalPages || 1);
+        setPage(res?.page || 1);
+      } catch (error) {
+        if (error.name !== "AbortError") console.error("❌ Fetch lỗi:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
     fetchProducts();
     return () => controller.abort(); // 👈 Hủy request cũ

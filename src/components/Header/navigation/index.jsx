@@ -45,7 +45,7 @@ const Navigation = () => {
     <>
       <nav
         className={`sticky top-0 z-30 w-full transition-all duration-500 ${
-          isScrolled ? "pt-2 bg-white shadow-md" : "pt-0"
+          isScrolled ? "pt-2  shadow-md" : "pt-0"
         }`}
       >
         <div className="container mx-auto flex items-center justify-between gap-4 py-2">
@@ -65,9 +65,9 @@ const Navigation = () => {
 
           {/* col2 – thanh menu cuộn bằng nút */}
           <div
-            className={`relative md:w-[80%] w-full transition-all duration-500 ${
+            className={`relative md:w-[80%] w-full transition-all duration-500  ${
               isScrolled
-                ? "fixed top-0 left-1/2 -translate-x-1/2 z-[0] w-[95%] sm:w-[80%] lg:w-fit backdrop-blur-xl bg-[rgba(20,20,20,0.5)] bg-gradient-to-r from-[rgba(20,20,20,0.55)] to-[rgba(60,60,60,0.35)] border border-white/20 rounded-2xl ring-1 ring-white/30 px-10 py-2 shadow-[0_8px_25px_rgba(0,0,0,0.15)]"
+                ? "fixed top-0 left-1/2 -translate-x-1/2 z-30 w-[95%] sm:w-[80%] lg:w-fit backdrop-blur-md backdrop-saturate-150 bg-white/10 border order-white/20 rounded-2xl ring-1 ring-white/30 shadow-[0_8px_25px_rgba(0,0,0,0.15)] px-10 py-2 animate-expandGlass"
                 : ""
             }`}
           >
@@ -84,19 +84,21 @@ const Navigation = () => {
             {/* Menu cuộn */}
             <div
               ref={scrollRef}
-              className="mx-8 overflow-hidden whitespace-nowrap scroll-smooth pl-56 md:pl-0"
+              className="mx-0 md:mx-8 overflow-hidden whitespace-nowrap scroll-smooth pl-60 md:pl-0"
             >
               <ul className="flex items-center justify-center gap-0">
                 <li>
-                  <Button
-                    className={`!text-sm md:!text-base !font-semibold !p-0 ${
-                      isScrolled
-                        ? "!text-[#FFD700] drop-shadow-[0_0_6px_rgba(255,215,0,0.6)]"
-                        : "!text-black hover:!text-[#001F5D]"
-                    }`}
-                  >
-                    Trang Chủ
-                  </Button>
+                  <Link to="/">
+                    <Button
+                      className={`!text-sm md:!text-base !font-semibold !p-0 ${
+                        isScrolled
+                          ? "!text-[#db501a] drop-shadow-[0_0_6px_rgba(255,215,0,0.6)]"
+                          : "!text-black hover:!text-[#001F5D]"
+                      }`}
+                    >
+                      Trang Chủ
+                    </Button>
+                  </Link>
                 </li>
 
                 {catData?.map((cat) => (
@@ -105,7 +107,7 @@ const Navigation = () => {
                       <Button
                         className={`!text-sm md:!text-base !font-semibold ${
                           isScrolled
-                            ? "!text-[#FFD700] drop-shadow-[0_0_6px_rgba(255,215,0,0.6)]"
+                            ? "!text-black"
                             : "!text-black hover:!text-[#001F5D]"
                         }`}
                       >
@@ -119,7 +121,7 @@ const Navigation = () => {
                   <Button
                     className={`!text-sm md:!text-base !font-semibold ${
                       isScrolled
-                        ? "!text-[#FFD700] drop-shadow-[0_0_6px_rgba(255,215,0,0.6)]"
+                        ? "!text-black drop-shadow-[0_0_6px_rgba(255,215,0,0.6)]"
                         : "!text-black hover:!text-[#001F5D]"
                     }`}
                   >
@@ -130,7 +132,7 @@ const Navigation = () => {
                   <Button
                     className={`!text-sm md:!text-base !font-semibold ${
                       isScrolled
-                        ? "!text-[#FFD700] drop-shadow-[0_0_6px_rgba(255,215,0,0.6)]"
+                        ? "!text-black drop-shadow-[0_0_6px_rgba(255,215,0,0.6)]"
                         : "!text-black hover:!text-[#001F5D]"
                     }`}
                   >

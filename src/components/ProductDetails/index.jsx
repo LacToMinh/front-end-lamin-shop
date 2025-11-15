@@ -33,10 +33,10 @@ const ProductDetailsComponent = ({ data }) => {
 
           <div className="flex items-center gap-3 mt-2">
             <span className="newPrice font-bold text-[20px] text-[#001F5D]">
-              {data?.price},000₫
+              {data?.price}₫
             </span>
             <span className="line-through text-[16px] text-gray-400">
-              {data?.oldPrice},000₫
+              {data?.oldPrice}₫
             </span>
             <span className="discount flex items-center px-2 py-[2px] bg-[#FF0000] rounded-2xl text-[14px] text-white font-semibold">
               {data?.discount}%
@@ -45,7 +45,7 @@ const ProductDetailsComponent = ({ data }) => {
 
           <p className="mt-4 text-gray-600 mb-6">{data?.description}</p>
           <span className="text-gray-500 text-[16px]">
-            Available in Stock:{" "}
+            Còn sẵn hàng:{" "}
             <span className="font-semibold text-green-600">
               {data?.countInStock}
             </span>

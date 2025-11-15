@@ -20,7 +20,7 @@ const CartItems = ({ data }) => {
 
   useEffect(() => {
     context?.getCartItems();
-  }, []);
+  }, [data?._id]);
 
   const handleClickSize = (event) => setSizeAnchorEl(event.currentTarget);
   const handleCloseSize = (value) => {
@@ -113,11 +113,11 @@ const CartItems = ({ data }) => {
         </div>
 
         {/* Size + Số lượng */}
-        <div className="flex items-center gap-4 mt-3">
-          <div className="relative">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mt-3 w-full">
+          <div className="relative w-full sm:w-auto">
             <span
               onClick={handleClickSize}
-              className="flex items-center gap-1 bg-gray-100 hover:bg-gray-200 text-[13px] font-semibold px-3 py-[4px] rounded-md cursor-pointer select-none transition"
+              className="flex items-center justify-center sm:justify-start gap-1 bg-gray-100 hover:bg-gray-200 text-[13px] font-semibold px-3 py-[4px] rounded-md w-fit cursor-pointer select-none transition sm:w-auto"
             >
               Size: {selectedSize} <GoTriangleDown className="text-[14px]" />
             </span>
@@ -145,13 +145,15 @@ const CartItems = ({ data }) => {
             </Menu>
           </div>
 
-          {/* Số lượng */}
-          <QtyBoxCart
-            value={qty}
-            min={1}
-            max={data.countInStock}
-            onChange={handleQtyChange}
-          />
+          {/* Qty box - responsive full width on mobile */}
+          <div className="w-full sm:w-auto">
+            <QtyBoxCart
+              value={qty}
+              min={1}
+              max={data.countInStock}
+              onChange={handleQtyChange}
+            />
+          </div>
         </div>
 
         {/* Giá */}
