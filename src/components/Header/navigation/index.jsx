@@ -1,178 +1,118 @@
-import Button from "@mui/material/Button";
-import { CgMenuGridR } from "react-icons/cg";
-import { LiaAngleDownSolid } from "react-icons/lia";
-import { Link } from "react-router-dom";
-import { GoRocket } from "react-icons/go";
-import CategoryPanel from "./CategoryPanel";
+// src/components/Header/Navigation/Navigation.jsx
 import { useEffect, useRef, useState } from "react";
+import MegaMenu from "./MegaMenu";
+import { LiaAngleDownSolid } from "react-icons/lia";
 import { getDataFromApi } from "../../../utils/api";
-import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { IoChevronBack, IoChevronForward } from "react-icons/io5";
+
+const CLOSE_DELAY = 400;
 
 const Navigation = () => {
-  const [isOpenCatPanel, setIsOpenCatPanel] = useState(false);
-  const [catData, setCatData] = useState([]);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const scrollRef = useRef();
+  const [openMenu, setOpenMenu] = useState(null);
+  const [cats, setCats] = useState([]);
+  const closeTimer = useRef(null);
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  // Hủy timer → KHÔNG ĐÓNG
+  const cancelClose = () => clearTimeout(closeTimer.current);
 
-  useEffect(() => {
-    getDataFromApi("/api/category").then((res) => {
-      setCatData(res?.data || []);
-    });
-  }, []);
-
-  const openCategoryPanel = () => {
-    setIsOpenCatPanel(!isOpenCatPanel);
+  // Bắt đầu timer → ĐÓNG
+  const handleGlobalMouseLeave = () => {
+    clearTimeout(closeTimer.current);
+    closeTimer.current = setTimeout(() => {
+      setOpenMenu(null);
+    }, CLOSE_DELAY);
   };
 
-  const scrollMenu = (direction) => {
-    if (!scrollRef.current) return;
-    const scrollAmount = 150;
-    scrollRef.current.scrollBy({
-      left: direction === "left" ? -scrollAmount : scrollAmount,
-      behavior: "smooth",
-    });
+  // Mở item
+  const openAndCancelClose = (key) => {
+   cancelClose();
+    setOpenMenu(key);
+  };
+
+  useEffect(() => {
+    getDataFromApi("/api/category").then((res) => setCats(res?.data || []));
+    return () => clearTimeout(closeTimer.current);
+  }, []);
+
+  /* -------------------- DESKTOP -------------------- */
+  const DesktopNav = () => (
+    <ul
+      className="hidden md:flex container mx-auto items-center justify-center gap-10 py-4 text-[16px] font-semibold"
+      onMouseEnter={cancelClose}
+      onMouseLeave={handleGlobalMouseLeave}
+    >
+      {["products", "denim", "collection"].map((key) => (
+        <li key={key} onMouseEnter={() => openAndCancelClose(key)}>
+          <button className="flex items-center gap-1 hover:text-[#001F5D] transition-colors">
+            {key === "products" && "Sản phẩm"}
+            {key === "denim" && "DENIM"}
+            {key === "collection" && "Collection"}
+            <LiaAngleDownSolid size={14} />
+          </button>
+
+          <MegaMenu
+            isOpen={openMenu === key}
+            cats={cats}
+            anchorId="main-navbar"
+            onPanelEnter={cancelClose}
+            onPanelLeave={handleGlobalMouseLeave}
+          />
+        </li>
+      ))}
+
+      <li><button className="hover:text-[#001F5D]">Hàng Mới</button></li>
+      <li><button className="hover:text-[#001F5D]">Hàng Bán Chạy</button></li>
+    </ul>
+  );
+
+  /* -------------------- MOBILE -------------------- */
+  const MobileNav = () => {
+    const scrollRef = useRef(null);
+
+    const items = [
+      { key: "products", label: "Sản Phẩm" },
+      { key: "new", label: "Hàng Mới" },
+      { key: "best", label: "Hàng Bán Chạy" },
+      { key: "denim", label: "DENIM" },
+      { key: "collection", label: "Collection" },
+    ];
+
+    return (
+      <div className="md:hidden relative overflow-hidden">
+        <div ref={scrollRef} className="no-scrollbar flex gap-6 px-8 py-3 overflow-x-auto">
+          {items.map((it) => (
+            <button
+              key={it.key}
+              onClick={() => setOpenMenu(openMenu === it.key ? null : it.key)}
+              className={`whitespace-nowrap font-semibold flex items-center gap-1 transition-colors ${
+                openMenu === it.key ? "text-[#001F5D]" : "text-gray-900"
+              }`}
+            >
+              {it.label}
+              {["products", "denim", "collection"].includes(it.key) && <LiaAngleDownSolid size={14} />}
+            </button>
+          ))}
+        </div>
+
+        {["products", "denim", "collection"].map((key) => (
+          <MegaMenu
+            key={key}
+            isOpen={openMenu === key}
+            cats={cats}
+            anchorId="main-navbar"
+            onPanelEnter={cancelClose}
+            onPanelLeave={handleGlobalMouseLeave}
+          />
+        ))}
+      </div>
+    );
   };
 
   return (
-    <>
-      <nav
-        className={`sticky top-0 z-30 w-full transition-all duration-500 ${
-          isScrolled ? "pt-2  shadow-md" : "pt-0"
-        }`}
-      >
-        <div className="container mx-auto flex items-center justify-between gap-4 py-2">
-          {/* col1 – chỉ hiển thị khi chưa scroll */}
-          {!isScrolled && (
-            <div className="hidden md:block items-center gap-2 w-[20%]">
-              <Button
-                className="!text-black gap-2 !text-sm md:!text-base !px-0 !font-semibold"
-                onClick={openCategoryPanel}
-              >
-                <CgMenuGridR className="text-base" />
-                Shop by Categories
-                <LiaAngleDownSolid className="mt-[-4px] text-sm" />
-              </Button>
-            </div>
-          )}
-
-          {/* col2 – thanh menu cuộn bằng nút */}
-          <div
-            className={`relative md:w-[80%] w-full transition-all duration-500  ${
-              isScrolled
-                ? "fixed top-0 left-1/2 -translate-x-1/2 z-30 w-[95%] sm:w-[80%] lg:w-fit backdrop-blur-md backdrop-saturate-150 bg-white/10 border order-white/20 rounded-2xl ring-1 ring-white/30 shadow-[0_8px_25px_rgba(0,0,0,0.15)] px-10 py-2 animate-expandGlass"
-                : ""
-            }`}
-          >
-            {/* Nút cuộn trái */}
-            <button
-              onClick={() => scrollMenu("left")}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-[999]
-             w-6 h-6 bg-transparent text-[#001F5D] hover:text-yellow-500
-             transition-all block md:hidden"
-            >
-              <FaChevronLeft size={16} />
-            </button>
-
-            {/* Menu cuộn */}
-            <div
-              ref={scrollRef}
-              className="mx-0 md:mx-8 overflow-hidden whitespace-nowrap scroll-smooth pl-60 md:pl-0"
-            >
-              <ul className="flex items-center justify-center gap-0">
-                <li>
-                  <Link to="/">
-                    <Button
-                      className={`!text-sm md:!text-base !font-semibold !p-0 ${
-                        isScrolled
-                          ? "!text-[#db501a] drop-shadow-[0_0_6px_rgba(255,215,0,0.6)]"
-                          : "!text-black hover:!text-[#001F5D]"
-                      }`}
-                    >
-                      Trang Chủ
-                    </Button>
-                  </Link>
-                </li>
-
-                {catData?.map((cat) => (
-                  <li key={cat._id}>
-                    <Link to={`/productListing?catId=${cat._id}`}>
-                      <Button
-                        className={`!text-sm md:!text-base !font-semibold ${
-                          isScrolled
-                            ? "!text-black"
-                            : "!text-black hover:!text-[#001F5D]"
-                        }`}
-                      >
-                        {cat.name}
-                      </Button>
-                    </Link>
-                  </li>
-                ))}
-
-                <li>
-                  <Button
-                    className={`!text-sm md:!text-base !font-semibold ${
-                      isScrolled
-                        ? "!text-black drop-shadow-[0_0_6px_rgba(255,215,0,0.6)]"
-                        : "!text-black hover:!text-[#001F5D]"
-                    }`}
-                  >
-                    Hàng Mới
-                  </Button>
-                </li>
-                <li>
-                  <Button
-                    className={`!text-sm md:!text-base !font-semibold ${
-                      isScrolled
-                        ? "!text-black drop-shadow-[0_0_6px_rgba(255,215,0,0.6)]"
-                        : "!text-black hover:!text-[#001F5D]"
-                    }`}
-                  >
-                    Hàng Bán Chạy
-                  </Button>
-                </li>
-              </ul>
-            </div>
-
-            {/* Nút cuộn phải */}
-            <button
-              onClick={() => scrollMenu("right")}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-[999]
-               w-6 h-6 bg-transparent text-[#001F5D] hover:text-yellow-500 transition-all block md:hidden"
-            >
-              <FaChevronRight size={16} />
-            </button>
-          </div>
-
-          {/* col3 – chỉ hiển thị khi chưa scroll */}
-          {!isScrolled && (
-            <div className="hidden md:flex items-center gap-2 w-0 md:w-[20%]">
-              <GoRocket className="text-xl" />
-              <p className="text-sm text-black/80 font-medium">
-                Free International Delivery
-              </p>
-            </div>
-          )}
-        </div>
-      </nav>
-
-      {/* CategoryPanel */}
-      {catData?.length > 0 && (
-        <CategoryPanel
-          openCategoryPanel={openCategoryPanel}
-          isOpenCatPanel={isOpenCatPanel}
-          data={catData}
-        />
-      )}
-    </>
+    <nav id="main-navbar" className="w-full bg-white shadow-sm border-b border-gray-200 z-[100]">
+      <DesktopNav />
+      <MobileNav />
+    </nav>
   );
 };
 

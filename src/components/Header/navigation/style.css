@@ -1,52 +1,14 @@
-.categoryPanel button {
-  text-transform: capitalize !important;
+/* src/components/Header/Navigation/style.css */
+/* Bỏ .mega-open/.mega-close cũ để tránh xung đột */
+.mega-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.06);
+  backdrop-filter: blur(1px);
+  z-index: 65;
 }
 
-.nav li .submenu {
-  visibility: hidden;
-}
-
-.nav li:hover .submenu {
-  opacity: 1 !important;
-  visibility: inherit;
-  top: 100%;
-}
-
-.nav li .submenu li .submenu {
-  top: 0px !important;
-  left: 120% !important;
-  opacity: 0 !important;
-}
-
-.nav li .submenu li:hover .submenu {
-  left: 100% !important;
-  opacity: 1 !important;
-}
-
-.nav li .submenu button:hover {
-  color: #ff5252 !important;
-}
-
-.category-wrapper {
-  display: flex;
-  align-items: center;
-  position: relative;
-}
-
-.category-scroll {
-  overflow-x: auto;
-  white-space: nowrap;
-  scroll-behavior: smooth;
-  flex: 1;
-}
-
-.scroll-btn {
-  background: white;
-  border: 1px solid #ccc;
-  cursor: pointer;
-  padding: 4px 8px;
-}
-
-/* .hidden {
-  display: none;
-} */
+/* src/components/Header/Navigation/navigation.css */
+/* Ẩn scrollbar chuẩn cross-browser */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

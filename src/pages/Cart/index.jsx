@@ -15,6 +15,13 @@ const CartPage = () => {
 
   const cartEmpty = context?.cartData?.length === 0;
 
+  const totalPrice = context?.cartData?.length
+  ? context.cartData
+      .map((item) => item.price * item.quantity)
+      .reduce((acc, val) => acc + val, 0)
+  : 0;
+
+
   return (
     <section className="section py-10 bg-[#F8F9FB] min-h-[80vh] transition-all">
       <div className="container_2 flex flex-col lg:flex-row gap-8 lg:gap-10">
@@ -48,7 +55,7 @@ const CartPage = () => {
                 ))}
               </div>
             ) : (
-              // Nếu trống
+              // Nếu trống  
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <img
                   src="/empty-cart.png"
@@ -81,7 +88,7 @@ const CartPage = () => {
             <div className="mt-3 space-y-4 text-[15px]">
               <div className="flex justify-between">
                 <span className="font-semibold">Tạm tính</span>
-                <span className="text-green-700 font-bold">1.300.000₫</span>
+                <span className="text-green-700 font-bold">{totalPrice.toLocaleString()}₫</span>
               </div>
               <div className="flex justify-between">
                 <span className="font-semibold">Phí vận chuyển</span>
@@ -95,7 +102,7 @@ const CartPage = () => {
               <div className="flex justify-between items-center">
                 <span className="font-semibold text-[16px]">Tổng cộng</span>
                 <span className="text-black font-bold text-[17px]">
-                  1.300.000₫
+                  {totalPrice.toLocaleString()}₫
                 </span>
               </div>
             </div>

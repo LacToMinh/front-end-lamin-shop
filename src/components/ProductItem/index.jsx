@@ -4,8 +4,9 @@ import { Button, Tooltip } from "@mui/material";
 import { FaRegHeart, FaShoppingCart } from "react-icons/fa";
 import { MdZoomOutMap } from "react-icons/md";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, hex } from "framer-motion";
 import { MyContext } from "../../App";
+import { postData } from "../../utils/api";
 
 const ProductItem = ({ item }) => {
   const context = useContext(MyContext);
@@ -28,6 +29,52 @@ const ProductItem = ({ item }) => {
   const handleImageChange = (img) => {
     setMainImage(img);
     setFadeKey((prev) => prev + 1);
+  };
+
+  const handleAddToMyList = async (item) => {
+    // Nếu chưa đăng nhập
+    if (!context?.userData?._id) {
+      context?.alertBox({
+        status: "error",
+        msg: "Vui lòng đăng nhập để thêm sản phẩm yêu thích",
+      });
+      return;
+    }
+
+    // Dữ liệu gửi lên API
+    const obj = {
+      productId: item?._id,
+      userId: context?.userData?._id,
+      productTitle: item?.name,
+      image: item?.images?.[0],
+      price: item?.price,
+      oldPrice: item?.oldPrice,
+      brand: item?.brand,
+      discount: item?.discount,
+    };
+
+    // 🟢 Gọi API qua context (nếu bạn đã thêm getMyListData trong App.jsx)
+    try {
+      const res = await postData("/api/mylist/add", obj);
+      if (res?.success) {
+        context?.alertBox({ status: "success", msg: res.message });
+        context?.getMyListData?.(); // cập nhật danh sách yêu thích nếu có
+      } else {
+        context?.alertBox({
+          status: "error",
+          msg: res?.message || "Không thể thêm sản phẩm",
+        });
+      }
+    } catch (error) {
+      console.error("❌ Lỗi thêm vào MyList:", error);
+      context?.alertBox({
+        status: "error",
+        msg: "Có lỗi khi thêm sản phẩm vào danh sách yêu thích",
+      });
+    }
+
+    // Giữ lại hiệu ứng đổi hình ảnh
+    handleImageChange(item?.images?.[0]);
   };
 
   return (
@@ -54,18 +101,27 @@ const ProductItem = ({ item }) => {
         {/* Nút chức năng */}
         <div className="absolute bottom-[-50px] left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-3 py-2 bg-white rounded-md shadow-md transition-all duration-500 group-hover:bottom-[12px]">
           <Tooltip title="Yêu thích" placement="top">
-            <Button className="!min-w-[29px] !w-[40px] !p-0">
-              <FaRegHeart className="text-[22px] text-black hover:text-red-600" />
+            <Button
+              className="!min-w-[29px] !w-[40px] !p-0"
+              onClick={() => handleAddToMyList(item)}
+            >
+              <FaRegHeart
+                className={`text-[22px] cursor-pointer transition-colors ${
+                  context?.myListData?.some((x) => x.productId === item._id)
+                    ? "text-red-600"
+                    : "text-black hover:text-red-600"
+                }`}
+              />
             </Button>
           </Tooltip>
-          <Tooltip title="Thêm vào giỏ" placement="top">
-            <Button
-              className="!min-w-[30px] !w-[40px] !p-0"
-              onClick={() => addToCart(item, context?.userData?._id, 1)}
-            >
+          {item.countInStock > 0 ? (
+            <Button onClick={() => addToCart(item, context?.userData?._id, 1)}>
               <FaShoppingCart className="text-[22px] text-black hover:text-red-600" />
             </Button>
-          </Tooltip>
+          ) : (
+            <span className="text-red-500 text-sm font-semibold">Hết hàng</span>
+          )}
+
           <Tooltip title="Xem nhanh" placement="top">
             <Button
               className="!min-w-[30px] !w-[40px] !p-0"

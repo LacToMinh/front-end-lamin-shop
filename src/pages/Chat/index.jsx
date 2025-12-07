@@ -157,7 +157,7 @@ const ClientChat = () => {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: 40 }}
             transition={{ type: "spring", stiffness: 180, damping: 20 }}
-            className="fixed bottom-5 right-5 bg-white shadow-xl border border-gray-200 rounded-2xl w-[370px] h-[500px] flex flex-col z-[9999] overflow-hidden"
+            className="fixed bottom-5 right-5 bg-white shadow-xl border border-gray-200 rounded-2xl w-[400px] h-[620px] flex flex-col z-10 overflow-hidden"
           >
             {/* HEADER */}
             <div className="bg-[#001F5D] text-white p-3 font-semibold text-[15px] flex items-center justify-between shadow-md">
@@ -296,7 +296,7 @@ const ClientChat = () => {
                               className="!text-[#001F5D] !border-[#001F5D] !text-[11px] !h-6"
                               onClick={() => {
                                 if (item.type === "order") {
-                                  window.location.href = `/orders/${item.id}`;
+                                  window.location.href = `/product/${item.id}`;
                                 } else {
                                   window.location.href = `/cart`;
                                 }

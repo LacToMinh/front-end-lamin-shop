@@ -1,3 +1,4 @@
+// frontend/src/pages/ProductListing/index.jsx
 import { useEffect, useState } from "react";
 import ProductItem from "../../components/ProductItem";
 import ProductItemList from "../../components/ProductItemList";
@@ -12,7 +13,9 @@ import { IoGrid } from "react-icons/io5";
 import { CiGrid2H } from "react-icons/ci";
 import { getDataFromApi, postData } from "../../utils/api";
 import LoadingSkeleton from "../../utils/LoadingSkeleton";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
+import LoaderOverlay from "../../components/ui/LoaderOverlay";
+import { MotionCard, MotionGrid } from "../../components/ui/MotionGrid";
 
 const ProductListing = () => {
   const [searchParams] = useSearchParams();
@@ -22,27 +25,27 @@ const ProductListing = () => {
 
   const [isItemView, setIsItemView] = useState("grid");
   const [anchorEl, setAnchorEl] = useState(null);
-  const [productData, setProductData] = useState([]); // danh sách sản phẩm
+  const [productData, setProductData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [isFiltering, setIsFiltering] = useState(false);
 
   const [selectedSortVal, setSelectedSortVal] = useState("Name, A to Z");
-
   const open = Boolean(anchorEl);
 
   const handleClick = (event) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
 
   useEffect(() => {
+    if (isFiltering) return;
     const controller = new AbortController();
 
     const fetchProducts = async () => {
       setIsLoading(true);
       try {
         let res;
-
         if (thirdSubCatId) {
           res = await getDataFromApi(
             `/api/product/getAllProductsByThirdSubCatId/${thirdSubCatId}?page=${page}`,
@@ -78,8 +81,8 @@ const ProductListing = () => {
     };
 
     fetchProducts();
-    return () => controller.abort(); // 👈 Hủy request cũ
-  }, [catId, page]);
+    return () => controller.abort();
+  }, [catId, subCatId, thirdSubCatId, page, isFiltering]);
 
   const handleSortBy = (name, order, products, value) => {
     setSelectedSortVal(value);
@@ -95,54 +98,38 @@ const ProductListing = () => {
 
   return (
     <section className="pb-8 pt-2 bg-[#F8F8F8]">
-      {/* 🔹 Breadcrumb */}
+      <LoaderOverlay
+        show={isLoading}
+        label={isFiltering ? "Đang lọc sản phẩm…" : "Đang tải sản phẩm…"}
+      />
+
       <div className="container sticky top-[140px]">
         <Breadcrumbs aria-label="breadcrumb" className="text-black">
-          <Link
-            underline="hover"
-            color="inherit"
-            to="/"
-            className="link transition-all text-black font-medium"
-          >
+          <Link className="link transition-all text-black font-medium" to="/">
             Home
           </Link>
-          <Link
-            underline="hover"
-            color="inherit"
-            to="/"
-            className="link transition-all text-black font-medium"
-          >
+          <Link className="link transition-all text-black font-medium" to="/">
             Fashion
           </Link>
         </Breadcrumbs>
       </div>
 
-      {/* 🔹 Main Content */}
       <div className="p-0 mt-0">
-        <div className="container flex gap-3">
-          {/* 🔸 Sidebar */}
-          <div
-            className={`sidebarWrapper sticky top-[180px] h-fit ${
-              isItemView === "grid" ? "w-[18%] h-full" : "w-[18%]"
-            }`}
-          >
+        <div className="container flex gap-10">
+          {/* Sidebar */}
+          <div className="sidebarWrapper sticky top-[100px] h-fit w-[16%]">
             <Sidebar
-              productData={productData}
               setProductData={setProductData}
               isLoading={isLoading}
               setIsLoading={setIsLoading}
               page={page}
               setTotalPages={setTotalPages}
+              setIsFiltering={setIsFiltering}
             />
           </div>
 
-          {/* 🔸 Product List */}
-          <div
-            className={`rightContent ${
-              isItemView === "grid" ? "w-[100%] h-full bg-white" : "w-[100%]"
-            }`}
-          >
-            {/* Header: Sort + View mode */}
+          {/* Products */}
+          <div className="rightContent flex-1">
             <div className="w-full bg-[#E5E5E5] py-1 mb-0 rounded-sm flex items-center justify-between z-20">
               <div className="col1 flex items-center pl-2 group">
                 <Button
@@ -181,9 +168,6 @@ const ProductListing = () => {
                   anchorEl={anchorEl}
                   open={open}
                   onClose={handleClose}
-                  MenuListProps={{
-                    "aria-labelledby": "basic-button",
-                  }}
                 >
                   <MenuItem
                     onClick={() =>
@@ -227,60 +211,36 @@ const ProductListing = () => {
               </div>
             </div>
 
-            {/* Product Grid */}
-            <div
-              className={`grid ${
-                isItemView === "grid"
-                  ? "grid-cols-5 md:grid-cols-5 gap-2 mt-[-12px]"
-                  : "grid-cols-1 md:grid-cols-1 gap-0"
-              }`}
-            >
-              {isLoading && productData.length === 0 ? (
-                <LoadingSkeleton count={5} />
-              ) : !isLoading && productData.length === 0 ? (
-                <div className="col-span-5 p-8 text-center text-gray-500">
-                  Không có sản phẩm nào.
-                </div>
-              ) : (
-                <AnimatePresence mode="wait">
+            {/* ⬇️ ONLY ONE GRID: dùng MotionGrid, bỏ grid bọc ngoài */}
+            {isLoading && productData.length === 0 ? (
+              <LoadingSkeleton count={5} />
+            ) : !isLoading && productData.length === 0 ? (
+              <div className="p-8 text-center text-gray-500">
+                Không có sản phẩm nào.
+              </div>
+            ) : (
+              <MotionGrid isGrid={isItemView === "grid"}>
+                <AnimatePresence mode="popLayout">
                   {Array.isArray(productData) &&
                     productData.length > 0 &&
-                    productData.map((item, index) => {
-                      // 👇 Giả sử grid có 5 cột
-                      const columns = 5;
-
-                      // Xác định vị trí hàng và cột của item
-                      const row = Math.floor(index / columns);
-                      const col = index % columns;
-
-                      // Tính delay dựa trên vị trí
-                      const delay = row * 0.05 + col * 0.07;
-
-                      return (
-                        <motion.div
-                          key={item._id || index}
-                          initial={{ opacity: 0, y: 40 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -30 }}
-                          transition={{
-                            duration: 0.2,
-                            delay: delay, // 👈 hiệu ứng “wave” theo hàng và cột
-                            ease: "easeOut",
-                          }}
-                        >
-                          {isItemView === "grid" ? (
-                            <ProductItem key={index} item={item} />
-                          ) : (
-                            <ProductItemList key={index} item={item} />
-                          )}
-                        </motion.div>
-                      );
-                    })}
+                    productData.map((item, index) => (
+                      <MotionCard
+                        key={item._id || index}
+                        i={index}
+                        columns={isItemView === "grid" ? 5 : 1}
+                        id={item._id || index}
+                      >
+                        {isItemView === "grid" ? (
+                          <ProductItem item={item} />
+                        ) : (
+                          <ProductItemList item={item} />
+                        )}
+                      </MotionCard>
+                    ))}
                 </AnimatePresence>
-              )}
-            </div>
+              </MotionGrid>
+            )}
 
-            {/* Pagination */}
             {totalPages >= 1 && (
               <div className="flex items-center justify-center my-5">
                 <Pagination

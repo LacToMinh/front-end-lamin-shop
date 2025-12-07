@@ -734,3 +734,27 @@ input[type="password"]::-webkit-outer-spin-button {
   background: #0a2875; /* khi hover */
 }
 
+/* Thanh cuộn nhỏ, tinh tế */
+.thin-scrollbar::-webkit-scrollbar {
+  height: 4px; /* chiều cao thanh cuộn ngang */
+}
+
+.thin-scrollbar::-webkit-scrollbar-track {
+  background: #f0f0f0; /* màu nền thanh cuộn */
+  border-radius: 10px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #001F5D; /* màu thanh cuộn */
+  border-radius: 10px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: #0039b3; /* khi hover đổi màu nhẹ */
+}
+
+/* Firefox */
+.thin-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #001F5D #f0f0f0;
+}

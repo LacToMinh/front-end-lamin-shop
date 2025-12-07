@@ -4,7 +4,13 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { MyContext } from "../../App";
 import { getDataFromApi, uploadImage } from "../../utils/api";
 import { MdCloudUpload } from "react-icons/md";
-import { FaAngleDown, FaAngleUp, FaEye, FaRegHeart, FaRegUser } from "react-icons/fa";
+import {
+  FaAngleDown,
+  FaAngleUp,
+  FaEye,
+  FaRegHeart,
+  FaRegUser,
+} from "react-icons/fa";
 import { TbMapPinPlus } from "react-icons/tb";
 import { LuShoppingBag } from "react-icons/lu";
 import { AiOutlineLogout } from "react-icons/ai";
@@ -336,17 +342,53 @@ const Orders = () => {
                         </td>
 
                         {/* Trạng thái thanh toán */}
+                        {/* Trạng thái thanh toán + phương thức thanh toán */}
                         <td className="p-3">
+                          {/* MAIN BADGE */}
                           <span
                             className={`px-3 py-[6px] rounded-full font-semibold text-xs border 
-                        ${
-                          o.payment_status === "Đã thanh toán"
-                            ? "bg-[rgba(82,196,26,0.15)] text-[#237804] border-[rgba(82,196,26,0.3)]"
-                            : "bg-[rgba(255,77,79,0.15)] text-[#a8071a] border-[rgba(255,77,79,0.3)]"
-                        }`}
+      ${
+        o.paymentMethod === "COD"
+          ? "bg-[rgba(250,173,20,0.15)] text-[#d48806] border-[rgba(250,173,20,0.3)]"
+          : o.payment_status === "Đã thanh toán"
+          ? "bg-[rgba(82,196,26,0.15)] text-[#237804] border-[rgba(82,196,26,0.3)]"
+          : "bg-[rgba(255,77,79,0.15)] text-[#a8071a] border-[rgba(255,77,79,0.3)]"
+      }
+    `}
                           >
-                            {o.payment_status}
+                            {o.paymentMethod === "COD"
+                              ? "COD - Chưa thanh toán"
+                              : `${o.paymentMethod} - ${o.payment_status}`}
                           </span>
+
+                          {/* SUB LABEL */}
+                          <div className="text-[11px] text-gray-500 mt-1 italic">
+                            {/* COD */}
+                            {o.paymentMethod === "COD" &&
+                              "Thanh toán khi nhận hàng"}
+
+                            {/* MOMO */}
+                            {o.paymentMethod === "MOMO" && (
+                              <>
+                                {o.paymentType === "WALLET" &&
+                                  "MoMo – Ví điện tử"}
+                                {o.paymentType === "ATM" &&
+                                  "MoMo – Thẻ ATM nội địa"}
+                                {o.paymentType === "CC" &&
+                                  "MoMo – Thẻ tín dụng / ghi nợ"}
+                              </>
+                            )}
+
+                            {/* VNPAY */}
+                            {o.paymentMethod === "VNPAY" &&
+                              "VNPay – Thanh toán trực tuyến"}
+
+                            {/* PAYPAL */}
+                            {o.paymentMethod === "PAYPAL" && "PayPal"}
+
+                            {/* RAZORPAY */}
+                            {o.paymentMethod === "RAZORPAY" && "Razorpay"}
+                          </div>
                         </td>
 
                         <td className="p-3 font-semibold text-[#001F5D]">
@@ -354,14 +396,14 @@ const Orders = () => {
                         </td>
 
                         <td className="text-center">
-                      <button
-                        onClick={() => handleViewOrder(o._id)}
-                        className="inline-flex items-center gap-2 text-[#001F5D] font-medium border border-[#001F5D] px-3 py-[4px] rounded-full hover:bg-[#001F5D] hover:text-white transition-all"
-                      >
-                        <FaEye className="text-[14px]" />
-                        Xem
-                      </button>
-                    </td>
+                          <button
+                            onClick={() => handleViewOrder(o._id)}
+                            className="inline-flex items-center gap-2 text-[#001F5D] font-medium border border-[#001F5D] px-3 py-[4px] rounded-full hover:bg-[#001F5D] hover:text-white transition-all"
+                          >
+                            <FaEye className="text-[14px]" />
+                            Xem
+                          </button>
+                        </td>
                       </tr>
 
                       {openIndex === idx && (
@@ -375,10 +417,12 @@ const Orders = () => {
                                     <th className="p-3 text-left">
                                       Product ID
                                     </th>
-                                    <th className="p-3 text-left">Title</th>
-                                    <th className="p-3 text-left">Image</th>
-                                    <th className="p-3 text-left">Qty</th>
-                                    <th className="p-3 text-left">Price</th>
+                                    <th className="p-3 text-left">
+                                      Tên đơn hàng
+                                    </th>
+                                    <th className="p-3 text-left">Hình ảnh</th>
+                                    <th className="p-3 text-left">Số lượng</th>
+                                    <th className="p-3 text-left">Đơn giá</th>
                                   </tr>
                                 </thead>
                                 <tbody>

@@ -103,7 +103,7 @@ const Login = () => {
       <div className="container">
         <div className="card shadow-[0_1px_8px_rgba(0,0,0,0.1)] w-[450px] m-auto rounded-md bg-white py-8 pt-5 px-8">
           <h3 className="text-center text-[24px] text-black font-bold">
-            Login to your account
+            Đăng nhập tài khoản
           </h3>
           <form action="" className="w-full mt-8" onSubmit={handleSubmit}>
             <div className="form-group w-full mb-5">
@@ -126,7 +126,7 @@ const Login = () => {
                 id="password"
                 value={formFields.password}
                 disabled={isLoading === true ? true : false}
-                label="Password*"
+                label="Mật khẩu*"
                 variant="outlined"
                 size="small"
                 className="w-full"
@@ -138,19 +138,18 @@ const Login = () => {
                 onClick={() => setIsShowPassword(!isShowPassword)}
               >
                 {isShowPassword === false ? (
-                  <FaEyeSlash className="text-[20px]" />
+                  <FaEyeSlash className="text-[20px] text-black" />
                 ) : (
-                  <FaEye className="text-[20px]" />
+                  <FaEye className="text-[20px] text-black" />
                 )}
               </Button>
             </div>
 
-            <a
+            <Link to="/forgot-password"
               className="link cursor-pointer text-[13px] font-[500] pl-1"
-              onClick={forgotPassword}
             >
-              Forgot password?
-            </a>
+              Quên mật khẩu?
+            </Link>
 
             <div className="btn-login mt-4 mb-1">
               <Button
@@ -171,19 +170,19 @@ const Login = () => {
             </div>
 
             <p className="text-[14px] text-start mb-3">
-              Not Registerd?{" "}
+              Chưa đăng ký?{" "}
               <Link className="link text-[14px] font-[600]" to="/register">
                 {" "}
-                Sign up
+                Đăng ký
               </Link>
             </p>
             <p className="text-[15px] text-center mb-4">
-              Or continue with social account
+              Hoặc tiếp tục với tài khoản Google
             </p>
 
             <Button className="btn-gg flex items-center gap-2 w-full justify-center !bg-[#f1f1f1] !font-[600]">
               <FcGoogle className="text-[22px]" />
-              Login with Google
+              Đăng nhập bằng Google
             </Button>
           </form>
         </div>

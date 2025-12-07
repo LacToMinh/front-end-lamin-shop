@@ -1,78 +1,126 @@
 import React from "react";
-import "../ProductItem/style.css";
 import Rating from "@mui/material/Rating";
-import { Button } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip";
+import { Button } from "@mui/material";
+import { Link } from "react-router-dom";
+
 import { FaRegHeart } from "react-icons/fa";
 import { IoMdGitCompare } from "react-icons/io";
 import { MdZoomOutMap } from "react-icons/md";
-import { Link } from "react-router-dom";
 
-const ProductItem = ({item}) => {
+const ProductItem = ({ item }) => {
   return (
-    <div className="productItem w-[100%] rounded-lg my-2 shadow-[0_1px_8px_rgba(0,0,0,0.1)] max-h-[300px] bg-white flex items-center mt-3">
-      <div className="group wrapper w-[20%] max-h-[300px] overflow-hidden relative">
-        <Link to="/login">
-          <div className="img overflow-hidden">
-            <img
-              src={item?.images[0]}
-              alt=""
-              className="w-full p-0 group-hover:opacity-0 !h-full px-8"
-            />
-            <img
-              src={item?.images[1]}
-              alt=""
-              className="w-full !h-full absolute py-2 px-6 top-0 left-0 opacity-0 transition-all duration-500 group-hover:opacity-100"
-            />
-          </div>
+    <div
+      className="
+      my-2
+      product-card 
+      w-full 
+      bg-white 
+      rounded-none
+      shadow-sm 
+      hover:shadow-lg 
+      transition-all 
+      duration-300 
+      p-4 
+      flex 
+      gap-20
+      border 
+      border-gray-100
+    "
+    >
+      {/* IMAGE */}
+      <div className="relative w-[200px] h-[200px] group rounded-xl overflow-hidden">
+        <Link to={`/product/${item?._id}`}>
+          <img
+            src={item?.images?.[0]}
+            alt={item?.name}
+            className="w-[90%] h-full object-cover rounded-xl transition-all duration-500 group-hover:scale-110"
+          />
         </Link>
-        <div className="actions absolute bottom-[-50px] left-[26.5%] z-[50] flex items-center gap-3 px-2 py-2 bg-white rounded-md shadow-md transition-all duration-500 group-hover:bottom-[14px]">
-          <Tooltip title="wishlist" placement="top">
-            <Button className="!min-w-[29px] !w-[45px] !bg-none !p-0 !m-0 !ml-[-4px]">
-              <FaRegHeart className="text-[26px] text-black hover:text-red-600" />
-            </Button>
+
+        {/* HOVER ACTION ICONS */}
+        <div
+          className="
+            absolute 
+            bottom-3 
+            left-1/2 
+            -translate-x-1/2 
+            flex 
+            items-center 
+            gap-3
+            opacity-0 
+            group-hover:opacity-100 
+            transition-all 
+            duration-300
+          "
+        >
+          <Tooltip title="Yêu thích">
+            <button className="w-10 h-10 bg-white shadow-md rounded-full flex items-center justify-center hover:bg-red-50 text-gray-700 hover:text-red-600 transition">
+              <FaRegHeart size={20} />
+            </button>
           </Tooltip>
-          <Tooltip title="compare" placement="top">
-            <Button className="!min-w-[30px] !bg-none !p-0 !m-0 !ml-[-7px]">
-              <IoMdGitCompare className="text-[26px] text-black hover:text-red-600" />
-            </Button>
+
+          <Tooltip title="So sánh">
+            <button className="w-10 h-10 bg-white shadow-md rounded-full flex items-center justify-center hover:bg-blue-50 text-gray-700 hover:text-blue-600 transition">
+              <IoMdGitCompare size={20} />
+            </button>
           </Tooltip>
-          <Tooltip title="view" placement="top">
-            <Button className="!min-w-[30px] !bg-none !p-0 !m-0">
-              <MdZoomOutMap className="text-[26px] text-black hover:text-red-600" />
-            </Button>
+
+          <Tooltip title="Phóng to">
+            <button className="w-10 h-10 bg-white shadow-md rounded-full flex items-center justify-center hover:bg-green-50 text-gray-700 hover:text-green-600 transition">
+              <MdZoomOutMap size={20} />
+            </button>
           </Tooltip>
         </div>
       </div>
 
-      <div className="info px-2 ml-8 w-[60%] flex-col justify-center items-center">
-        <h6 className="capitalize truncate font-medium text-[17px]">
-          {item?.name}
-        </h6>
-        <Rating
-          name="size-small"
-          defaultValue={4}
-          size="small"
-          readOnly
-          className="ml-[-2px] mt-[2px]"
-        />
-        <div className="flex items-center gap-3">
-          <span className="newPrice font-semibold text-[#001F5D]">
-            {item?.price},000₫
+      {/* INFO */}
+      <div className="flex flex-col justify-between flex-1 py-2">
+        {/* NAME */}
+        <Link to={`/product/${item?._id}`}>
+          <h3 className="font-semibold text-[18px] text-gray-800 line-clamp-2 hover:text-[#001F5D] transition">
+            {item?.name}
+          </h3>
+        </Link>
+
+        {/* RATING */}
+        <Rating value={4} size="small" readOnly className="mt-1" />
+
+        {/* PRICE */}
+        <div className="mt-3 flex items-center gap-3">
+          <span className="text-[20px] font-bold text-[#001F5D]">
+            {item?.price?.toLocaleString("vi-VN")}₫
           </span>
-          <span className="line-through text-gray-400">{item?.oldPrice},000₫</span>
-          <span className="discount flex items-center px-2 py-[2px] bg-[#FF0000] rounded-2xl text-[14px] text-white font-semibold">
+
+          {item?.oldPrice && (
+            <span className="line-through text-gray-400 text-[14px]">
+              {item?.oldPrice?.toLocaleString("vi-VN")}₫
+            </span>
+          )}
+
+          <span className="bg-red-600 text-white px-2 py-[2px] rounded-full text-[13px] font-semibold">
             -10%
           </span>
         </div>
 
-        <div className="mt-10 group">
-          <Button className="btn-org">
-            <span className="text-white font-medium group-hover:text-black !group-hover:font-medium transition-all duration-300">
-              Add to cart
-            </span>
-          </Button>
-        </div>
+        {/* ADD TO CART */}
+        <Button
+          variant="contained"
+          className="
+            w-fit
+            !mt-5 
+            !bg-[#001F5D] 
+            !rounded-md 
+            !py-1 
+            !px-4 
+            !text-white 
+            hover:!bg-[#002b8a]
+            transition-all 
+            duration-300
+          "
+        >
+          <span className="text-white">Thêm vào giỏ</span>
+        </Button>
       </div>
     </div>
   );

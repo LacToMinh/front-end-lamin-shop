@@ -5,6 +5,7 @@ import { FaRegHeart } from "react-icons/fa";
 import { IoMdGitCompare } from "react-icons/io";
 import { getDataFromApi } from "../../utils/api";
 import { MyContext } from "../../App";
+import { TfiRulerAlt } from "react-icons/tfi";
 
 const ProductDetailsComponent = ({ data }) => {
   const [selectedSize, setSelectedSize] = useState("");
@@ -33,7 +34,7 @@ const ProductDetailsComponent = ({ data }) => {
 
           <div className="flex items-center gap-3 mt-2">
             <span className="newPrice font-bold text-[20px] text-[#001F5D]">
-              {data?.price}₫
+              {data?.price.toLocaleString('vi-VN')}₫
             </span>
             <span className="line-through text-[16px] text-gray-400">
               {data?.oldPrice}₫
@@ -56,7 +57,7 @@ const ProductDetailsComponent = ({ data }) => {
               Kích thước: <strong>{selectedSize}</strong>
             </span>
             <span className="text-[14px] underline font-medium cursor-pointer flex items-center gap-1">
-              <img src="/ruler-icon.png" className="w-[14px] h-[14px]" alt="" />
+              <TfiRulerAlt />
               Hướng dẫn chọn size
             </span>
           </div>
@@ -65,7 +66,7 @@ const ProductDetailsComponent = ({ data }) => {
             {data?.size?.map((size) => (
               <button
                 key={size}
-                 onClick={() => setSelectedSize(size)}
+                onClick={() => setSelectedSize(size)}
                 className={`w-[42px] h-[42px] rounded-xl border-[1.5px] transition-all font-semibold
                   ${
                     selectedSize === size
@@ -85,7 +86,7 @@ const ProductDetailsComponent = ({ data }) => {
           <div className="flex items-center gap-4 mt-6">
             <span className="flex items-center gap-2 text-[16px] link cursor-pointer fo nt-[500]">
               <FaRegHeart />
-              Add to Wishlist
+              Thêm vào danh sách yêu thích
             </span>
             <span className="flex items-center gap-2 text-[16px] link cursor-pointer font-[500]">
               <IoMdGitCompare />

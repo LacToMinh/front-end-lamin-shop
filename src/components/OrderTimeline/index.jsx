@@ -92,7 +92,7 @@ function AnimatedStepIcon(props) {
             r="27"
             fill="transparent"
             stroke="url(#gradient)"
-            strokeWidth="3"
+            strokeWidth="4"
             strokeLinecap="round"
             initial={{ pathLength: 0 }}
             animate={{ pathLength: 1 }}
@@ -117,7 +117,7 @@ const steps = [
   { label: "Đã xác nhận", key: "updatedAt" },
   { label: "Đang giao hàng", key: "updatedAt" },
   { label: "Hoàn tất", key: "updatedAt" },
-  { label: "Đánh giá", key: "updatedAt" },
+  // { label: "Đánh giá", key: "updatedAt" },
 ];
 
 export default function OrderStepperPro({ status, timestamps = {} }) {

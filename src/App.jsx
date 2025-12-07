@@ -23,7 +23,7 @@ import CartPage from "./pages/Cart";
 import Checkout from "./pages/Checkout";
 import Verify from "./pages/Verify";
 import MyAccount from "./pages/MyAccount";
-import { getDataFromApi, postData } from "./utils/api";
+import { deleteData, getDataFromApi, postData } from "./utils/api";
 import Address from "./pages/Address";
 import OrderSuccess from "./pages/Orders/success";
 import Orders from "./pages/Orders";
@@ -32,6 +32,12 @@ import SearchPage from "./pages/Search";
 import ChatBox from "./pages/Chat";
 import OrderDetails from "./pages/OrderDetails";
 import ClientChat from "./pages/Chat";
+import MyList from "./pages/MyList";
+import TryOn from "./pages/TryOn";
+import BlogDetail from "./pages/BlogDetail";
+import VerifyOtp from "./pages/VerifyOtpPassword";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 const alertBox = ({ status, msg }) => {
   if (status === "success") toast.success(msg);
@@ -56,6 +62,7 @@ function App() {
   const [searchData, setSearchData] = useState([]);
   const [isSearchMode, setIsSearchMode] = useState(false);
   const [product, setProduct] = useState([]);
+  const [myListData, setMyListData] = useState([]);
 
   // const apiUrl = import.meta.env.VITE_API_URL;
 
@@ -91,6 +98,24 @@ function App() {
       });
     }
 
+    // ⛔ Nếu sản phẩm hết hàng → không cho thêm giỏ
+    if (product.countInStock <= 0) {
+      alertBox({
+        status: "error",
+        msg: "Sản phẩm đã hết hàng!",
+      });
+      return;
+    }
+
+    // ⛔ Nếu đặt vượt quá số lượng tồn kho
+    if (quantity > product.countInStock) {
+      alertBox({
+        status: "error",
+        msg: `Chỉ còn ${product.countInStock} sản phẩm trong kho!`,
+      });
+      return;
+    }
+
     const data = {
       productTitle: product?.name,
       image: product?.images[0],
@@ -99,6 +124,7 @@ function App() {
       oldPrice: product?.oldPrice,
       discount: product?.discount,
       quantity: quantity,
+      rating: product?.rating,
       subTotal: parseInt(product?.price * quantity),
       productId: product?._id,
       countInStock: product?.countInStock,
@@ -163,7 +189,47 @@ function App() {
     });
   };
 
+  const handleAddToMyList = async (item) => {
+    if (!userData?._id) {
+      alertBox({
+        status: "error",
+        msg: "Vui lòng đăng nhập để thêm sản phẩm yêu thích",
+      });
+      return;
+    }
 
+    const obj = {
+      productId: item?._id,
+      userId: userData?._id,
+      productTitle: item?.name,
+      image: item?.images[0],
+      price: item?.price,
+      oldPrice: item?.oldPrice,
+      brand: item?.brand,
+      discount: item?.discount,
+    };
+
+    const res = await postData("/api/mylist/add", obj);
+    if (res?.success) {
+      alertBox({ status: "success", msg: res?.message });
+      getMyListData();
+    } else {
+      alertBox({ status: "error", msg: res?.message });
+    }
+  };
+
+  const getMyListData = async () => {
+    const res = await getDataFromApi("/api/mylist");
+    setMyListData(res?.data || []);
+  };
+
+  const deleteMyListItem = async (id) => {
+    const res = await deleteData(`/api/mylist/${id}`);
+    if (res?.success) {
+      alertBox({ status: "success", msg: res?.message });
+      getMyListData();
+    }
+  };
 
   const values = {
     setOpenProductDetailsModal,
@@ -188,6 +254,11 @@ function App() {
     setSearchData,
     isSearchMode,
     setIsSearchMode,
+    myListData,
+    setMyListData,
+    getMyListData,
+    handleAddToMyList,
+    deleteMyListItem,
   };
   return (
     <>
@@ -206,10 +277,14 @@ function App() {
         <Header />
         <Routes>
           <Route path={"/"} element={<Home />} />
+          <Route path={"/try"} element={<TryOn />} />
           <Route path={"/productListing"} element={<ProductListing />} />
           <Route path={"/product/:id"} element={<ProductDetails />} />
           <Route path={"/login"} element={<Login />} />
           <Route path={"/register"} element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/verify-otp" element={<VerifyOtp />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path={"/cart"} element={<CartPage />} />
           <Route path={"/checkout"} element={<Checkout />} />
           <Route path={"/my-orders"} element={<Orders />} />
@@ -217,8 +292,10 @@ function App() {
           <Route path={"/order/success"} element={<OrderSuccess />} />
           <Route path={"/verify"} element={<Verify />} />
           <Route path={"/my-account"} element={<MyAccount />} />
+          <Route path={"/my-list"} element={<MyList />} />
           <Route path={"/address"} element={<Address />} />
-          <Route path={"/try-on"} element={<TryOnPage />} />
+          <Route path={"/blog/:id"} element={<BlogDetail />} />
+          {/* <Route path={"/try-on"} element={<TryOnPage />} /> */}
           <Route path={"/search"} element={<SearchPage />} />
           <Route path={"/chat"} element={<ChatBox />} />
         </Routes>

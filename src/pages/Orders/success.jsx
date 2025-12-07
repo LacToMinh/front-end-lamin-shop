@@ -30,7 +30,7 @@ const OrderSuccess = () => {
         </p>
 
         <div className="flex flex-col gap-3">
-          <Link to="/orders">
+          <Link to="/my-orders">
             <Button variant="outlined" color="success" fullWidth>
               Xem đơn hàng
             </Button>

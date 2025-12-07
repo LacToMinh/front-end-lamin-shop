@@ -1,30 +1,56 @@
 import React from "react";
 import { LuClock3 } from "react-icons/lu";
-import { Link } from "react-router-dom"
 import { FaArrowRight } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
-const BlogItem = () => {
+const BlogItem = ({ blog }) => {
   return (
-    <div className="blogItem group">
-      <div className="imgWrapper w-full overflow-hidden relative">
+    <div className="group relative bg-white shadow-md hover:shadow-xl transition-all duration-500 rounded-xl overflow-hidden border border-gray-100">
+      {/* ẢNH */}
+      <div className="relative w-full h-56 overflow-hidden">
         <img
-          src="/blog_1.webp"
-          alt="blog image"
+          src={blog.thumbnail || "/no-images.png"}
+          alt={blog.title}
           loading="lazy"
-          className="w-full transition-all duration-700 group-hover:scale-105 cursor-pointer relative"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
         />
-        <span className="flex items-center justify-center text-white absolute bottom-[15px] right-[15px] z-[100] bg-primary rounded-md p-1 text-[14px] font-medium gap-1">
-          <LuClock3 className="text-[15px]" /> 5 APRIL, 2023
+
+        {/* Overlay + Ngày tháng */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-70 group-hover:opacity-80 transition-all duration-500"></div>
+
+        <span className="absolute bottom-3 left-3 flex items-center gap-1 text-white text-sm bg-black/50 backdrop-blur-md px-2 py-1 rounded-md">
+          <LuClock3 className="text-[15px]" />
+          {new Date(blog.createdAt).toLocaleDateString("vi-VN")}
         </span>
-        <div className="absolute inset-0 bg-black/50 opacity-50 transition-opacity duration-700 delay-700 ease-in-out z-[50] group-hover:bg-black/70 group-hover:delay-700 pointer-events-none cursor-pointer" />
       </div>
 
-      <div className="info py-4">
-        <h2 className="blog-title text-[18px] font-semibold">
-          <Link to="/" className="link">Gợi ý outfit thời trang mùa hè nam 2025 đẹp, dẫn đầu xu hướng</Link>
-        </h2>
-        <p className="blog-desc text-[14px] font-light">Mùa hè 2025 đang đến gần, mang theo làn gió mới trong thế giới thời trang mùa hè nam giới. Đây là thời điểm lý tưởng ...</p>
-        <Link to="/login" className="link text-[15px] font-medium underline flex items-center gap-1" >Đọc thêm <FaArrowRight /></Link>
+      {/* THÔNG TIN */}
+      <div className="p-5 flex flex-col justify-between h-[220px]">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-800 group-hover:text-primary transition-colors duration-300 line-clamp-2">
+            <Link to={`/blog/${blog._id}`} className="hover:underline">
+              {blog.title}
+            </Link>
+          </h2>
+
+          <div className="text-gray-600 text-[15px] font-light mt-2 leading-relaxed line-clamp-3">
+            {blog.content?.replace(/<[^>]+>/g, "").slice(0, 150)}...
+          </div>
+        </div>
+
+        {/* FOOTER */}
+        <div className="mt-4 flex justify-between items-center">
+          <span className="text-sm text-gray-500 italic">
+            ✍️ {blog.author || "Tác giả ẩn danh"}
+          </span>
+
+          <Link
+            to={`/blog/${blog._id}`}
+            className="text-primary font-medium flex items-center gap-1 hover:gap-2 transition-all text-[15px]"
+          >
+            Đọc thêm <FaArrowRight className="text-[14px]" />
+          </Link>
+        </div>
       </div>
     </div>
   );

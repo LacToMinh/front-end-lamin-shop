@@ -14,6 +14,7 @@ import { FiTrash } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import VoucherSection from "../../components/Voucher";
+import DeliveryEstimate from "../../components/DeliveryEstimate";
 
 const VITE_APP_RAZORPAY_KEY_ID = import.meta.env.VITE_APP_RAZORPAY_KEY_ID;
 const VITE_APP_PAYPAL_CLIENT_ID = import.meta.env.VITE_APP_PAYPAL_CLIENT_ID;
@@ -38,41 +39,7 @@ const Checkout = () => {
     mobile: "",
   });
 
-  // const [voucherCode, setVoucherCode] = useState("");
   const [discountAmount, setDiscountAmount] = useState(0);
-  // const [voucherMessage, setVoucherMessage] = useState("");
-  // const [voucherSuccess, setVoucherSuccess] = useState(false);
-
-  // const applyVoucher = async () => {
-  //   if (!voucherCode.trim()) {
-  //     setVoucherMessage("Vui lòng nhập mã giảm giá!");
-  //     setVoucherSuccess(false);
-  //     return;
-  //   }
-
-  //   try {
-  //     const res = await fetch(
-  //       `${VITE_API_URL}/api/voucher/validate/${voucherCode}?total=${totalAmount}`
-  //     );
-  //     const data = await res.json();
-
-  //     if (data.success) {
-  //       setDiscountAmount(data.discountAmount);
-  //       setVoucherSuccess(true);
-  //       setVoucherMessage(
-  //         `Áp dụng thành công! Giảm ${data.discountAmount.toLocaleString()} ₫`
-  //       );
-  //     } else {
-  //       setDiscountAmount(0);
-  //       setVoucherSuccess(false);
-  //       setVoucherMessage(data.message);
-  //     }
-  //   } catch (err) {
-  //     setDiscountAmount(0);
-  //     setVoucherSuccess(false);
-  //     setVoucherMessage("Không thể kiểm tra mã giảm giá!");
-  //   }
-  // };
 
   const fetchAddresses = async () => {
     const res = await getDataFromApi("/api/address/get");
@@ -170,63 +137,6 @@ const Checkout = () => {
     localStorage.setItem("totalAmount", total); // <-- Lưu số vào localStorage
   }, [context.cartData]);
 
-  // const checkout = (e) => {
-  //   e.preventDefault();
-
-  //   var payLoad = {
-  //     key: VITE_APP_RAZORPAY_KEY_ID,
-  //     // key_secret: VITE_APP_RAZORPAY_KEY_SECRET,
-  //     amount: parseInt(totalAmount * 1000),
-  //     currency: "INR",
-  //     order_receipt: "order_rcptid_" + context?.userData?.name,
-  //     name: "Lamin Ecommerce",
-  //     description: "for testing purpose",
-  //     handler: function (res) {
-  //       console.log(res);
-  //       const paymentId = res.razorpay_payment_id;
-  //       const user = context?.userData;
-
-  //       const payLoad = {
-  //         userId: user?._id,
-  //         products: context?.cartData,
-  //         paymentId: paymentId,
-  //         payment_status: "COMPLETED",
-  //         delivery_address: selectedValue,
-  //         totalAmt: totalAmount,
-  //         date: new Date().toLocaleString("en-US", {
-  //           month: "short",
-  //           day: "2-digit",
-  //           year: "numeric",
-  //         }),
-  //       };
-
-  //       // Loại thẻ	Số thẻ test (Card Number)	Expiry	CVV	OTP
-  //       // Visa	4111 1111 1111 1111	12/25	123	123456
-  //       // MasterCard	5555 5555 5555 4444	12/25	123	123456
-  //       // RuPay	6076 4890 0000 0004	12/25	123	123456
-  //       // Maestro	6759 6498 2643 8453	12/25	123	123456
-
-  //       postData(`/api/order/create`, payLoad).then((res) => {
-  //         context.alertBox("success", res?.message);
-  //         if (res?.error === false) {
-  //           deleteData(`/api/cart/emptyCart/${userId}`).then((res) => {
-  //             context?.getCartItems();
-  //           });
-  //           navigate("/");
-  //         } else {
-  //           context.alertBox("error", res?.message);
-  //         }
-  //       });
-  //     },
-  //     theme: {
-  //       color: "#001F5D",
-  //     },
-  //   };
-
-  //   var pay = new window.Razorpay(payLoad);
-  //   pay.open();
-  // };
-
   const checkout = async (e) => {
     e.preventDefault();
 
@@ -259,6 +169,7 @@ const Checkout = () => {
             delivery_address: selectedValue,
             totalAmt: totalAmount - discountAmount,
             voucherCode: voucherCode,
+            paymentMethod: "RAZORPAY",
             date: new Date().toLocaleString("vi-VN", {
               month: "short",
               day: "2-digit",
@@ -381,7 +292,7 @@ const Checkout = () => {
     document.body.appendChild(script);
   }, [context?.cartData, context?.userData, selectedValue]);
 
-  const cashOnDelivery = () => {
+  const cashOnDelivery = async () => {
     const user = context?.userData;
 
     const payLoad = {
@@ -390,7 +301,8 @@ const Checkout = () => {
       paymentId: "",
       payment_status: "Thanh toán khi nhận hàng",
       delivery_address: selectedValue,
-      totalAmt: totalAmount,
+      paymentMethod: "COD",
+      totalAmt: totalAmount - discountAmount,
       date: new Date().toLocaleString("en-US", {
         month: "short",
         day: "2-digit",
@@ -399,12 +311,15 @@ const Checkout = () => {
     };
 
     postData(`/api/order/create`, payLoad).then((res) => {
-      context.alertBox("success", res?.message);
-      if (res?.error === false) {
+      if (res?.success === true) {
+        context.alertBox({
+          status: "success",
+          msg: "Đặt hàng thành công!",
+        });
         deleteData(`/api/cart/emptyCart/${user?._id}`).then((res) => {
           context?.getCartItems();
         });
-        navigate("/");
+        navigate("/my-orders");
       } else {
         context.alertBox("error", res?.message);
       }
@@ -414,7 +329,10 @@ const Checkout = () => {
   const momoCheckout = async (method = "WALLET") => {
     // 1️⃣ Kiểm tra địa chỉ giao hàng
     if (!selectedValue) {
-      context.alertBox("error", "Vui lòng chọn địa chỉ giao hàng");
+      context.alertBox({
+        status: "error",
+        msg: "Vui lòng chọn địa chỉ giao hàng",
+      });
       return;
     }
 
@@ -423,7 +341,7 @@ const Checkout = () => {
       const user = context?.userData;
 
       const payload = {
-        user: user?._id, // ✔ user ObjectId
+        userId: user?._id, // ✔ user ObjectId
         products: context?.cartData?.map((item) => ({
           productId: item._id,
           productTitle: item.productTitle,
@@ -433,9 +351,10 @@ const Checkout = () => {
           subTotal: item.price * item.quantity,
         })), // ✔ danh sách sản phẩm
         delivery_address: selectedValue, // ✔ ObjectId địa chỉ
-        totalAmt: totalAmount, // ✔ tổng tiền
-        amount: totalAmount, // ✔ số tiền gửi cho MoMo
-        paymentMethod: method,
+        totalAmt: totalAmount - discountAmount, // ✔ tổng tiền
+        amount: totalAmount - discountAmount, // ✔ số tiền gửi cho MoMo
+        paymentMethod: "MOMO",
+        paymentType: method,
       };
 
       // 3️⃣ Gọi API backend tạo thanh toán
@@ -489,10 +408,10 @@ const Checkout = () => {
           subTotal: item.price * item.quantity,
         })),
         delivery_address: selectedValue,
-        totalAmt: totalAmount,
-        amount: totalAmount,
+        totalAmt: totalAmount - discountAmount,
+        amount: totalAmount - discountAmount,
         paymentMethod: "VNPAY",
-        orderDescription: "Thanh toán đơn hàng tại Lạc Tố Minh Store", // ✅ mới thêm
+        orderDescription: "Thanh toán đơn hàng tại LAMINDENIM", // ✅ mới thêm
         orderType: "other", // ✅ theo mẫu VNPay
       };
 
@@ -535,7 +454,7 @@ const Checkout = () => {
                   </Button>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-3 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar">
                   {addresses?.length > 0 ? (
                     addresses.map((address) => (
                       <label
@@ -615,6 +534,8 @@ const Checkout = () => {
                   )}
                 </div>
               </div>
+
+              <DeliveryEstimate />
             </div>
 
             {/* RIGHT COLUMN - ĐƠN HÀNG */}

@@ -14,6 +14,8 @@ import BlogItem from "../../components/BlogItem";
 import { getDataFromApi } from "../../utils/api";
 import { MyContext } from "../../App";
 import CollectionShowcase from "../../components/CollectionShowcase";
+import ServiceInfoBar from "../../components/ServiceInfoBar";
+import VoucherList from "../../components/VoucherList";
 
 const Home = () => {
   const [value, setValue] = React.useState(0);
@@ -30,6 +32,16 @@ const Home = () => {
     getDataFromApi("/api/homeSlides").then((res) => {
       setHomeSlidesData(res?.data);
     });
+  }, []);
+
+  const [blogs, setBlogs] = useState([]);
+
+  useEffect(() => {
+    const fetchBlogs = async () => {
+      const res = await getDataFromApi("/api/blog/getAllPublished");
+      if (res?.success) setBlogs(res.data);
+    };
+    fetchBlogs();
   }, []);
 
   useEffect(() => {
@@ -97,16 +109,15 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
-    window.scrollTo(0,0);
-  }, [])
+    window.scrollTo(0, 0);
+  }, []);
 
   return (
     <>
       {homeSlidesData?.length !== 0 && <HomeSlider data={homeSlidesData} />}
+      <ServiceInfoBar />
 
-      {context?.catData?.length !== 0 && (
-        <HomeCatSlider data={context?.catData} />
-      )}
+      <VoucherList />
 
       <section className="my-1 pt-2 bg-white">
         <div className="container">
@@ -283,11 +294,15 @@ const Home = () => {
             }}
             className="blogSlider"
           >
-            {[1, 2, 3, 4].map((_, i) => (
-              <SwiperSlide key={i}>
-                <BlogItem />
-              </SwiperSlide>
-            ))}
+            {blogs?.length > 0 ? (
+              blogs.map((blog) => (
+                <SwiperSlide key={blog._id}>
+                  <BlogItem blog={blog} />
+                </SwiperSlide>
+              ))
+            ) : (
+              <p>Không có bài viết nào</p>
+            )}
           </Swiper>
         </div>
       </section>

@@ -61,6 +61,25 @@ export const getDataFromApi = async (url) => {
   }
 };
 
+export const uploadImageGemini = async (url, updatedData) => {
+  try {
+    const params = {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        // "Content-Type": "multipart/form-data",
+      },
+    };
+
+    var response;
+    await axios.post(apiUrl + url, updatedData, params).then((res) => {
+      response = res;
+    });
+    return response;
+  } catch (error) {
+    return error;
+  }
+};
+
 export const uploadImage = async (url, updatedData) => {
   try {
     const params = {

@@ -46,7 +46,7 @@ const Verify = () => {
               <img src="/shield.png" alt="" width={70} />
             </div>
             <h3 className="text-center text-[22px] text-black font-bold mt-3 mb-4">
-              Verify OTP
+              Xác thực OTP
             </h3>
 
             <p className="text-center mb-3 text-[15px]">

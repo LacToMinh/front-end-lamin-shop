@@ -12,7 +12,7 @@ const HomeSlider = ({ data = [] }) => {
         autoplay={{
           delay: 3500,
           disableOnInteraction: false,
-          pauseOnMouseEnter: true, // ✅ dừng khi hover
+          pauseOnMouseEnter: true,
         }}
         loop={true}
         centeredSlides={true}
