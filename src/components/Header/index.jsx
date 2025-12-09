@@ -18,6 +18,7 @@ import { LuShoppingBag } from "react-icons/lu";
 import { FaRegHeart } from "react-icons/fa";
 import { AiOutlineLogout } from "react-icons/ai";
 import { getDataFromApi } from "../../utils/api";
+import { useEffect } from "react";
 
 const StyledBadge = styled(Badge)(({ theme }) => ({
   "& .MuiBadge-badge": {
@@ -46,17 +47,33 @@ const Header = () => {
   const logout = () => {
     setAnchorEl(null);
 
-    getDataFromApi("/api/user/logout").then((res) => {
-      console.log(res);
-      if (res?.error !== true) {
-        context.setIsLogin(false);
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("refreshToken");
-        context?.setUserData(null);
-        history("/");
-      }
+    getDataFromApi("/api/user/logout").finally(() => {
+      forceLogout();
     });
   };
+
+  const forceLogout = () => {
+    context.setIsLogin(false);
+    context.setUserData(null);
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
+    history("/login");
+  };
+
+  useEffect(() => {
+    if (context.isLogin) {
+      getDataFromApi("/api/user/user-details")
+        .then((res) => {
+          if (res?.success !== true) {
+            // Token hết hạn hoặc user bị khóa
+            forceLogout();
+          }
+        })
+        .catch(() => {
+          forceLogout();
+        });
+    }
+  }, []);
 
   return (
     <>

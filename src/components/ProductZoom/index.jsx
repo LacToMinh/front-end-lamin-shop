@@ -63,7 +63,7 @@ const ProductZoom = ({images}) => {
             {images?.map((img, index) => (
               <SwiperSlide key={index}>
                 <InnerImageZoom
-                  zoomType="hover"
+                  zoomType="click"
                   zoomScale={1.5}
                   zoomPreload={true}
                   src={img}

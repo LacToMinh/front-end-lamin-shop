@@ -3,6 +3,34 @@ const apiUrl = import.meta.env.VITE_API_URL;
 
 import axiosClient from "./axiosClient";
 
+// ===============================
+// 🔥 AXIOS INTERCEPTOR – AUTO LOGOUT (CLIENT ONLY)
+// ===============================
+if (import.meta.env.VITE_ENABLE_CLIENT_INTERCEPTOR=== "true") {
+  axios.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      const status = error?.response?.status;
+
+      if (
+        (status === 401 || status === 403) &&
+        window.location.pathname !== "/login"
+      ) {
+        // Hết hạn token hoặc tài khoản bị khóa
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+
+        if (window?.appContext) { window.appContext.setIsLogin(false); window.appContext.setUserData(null); }
+
+        window.location.href = "/login";
+      }
+
+      return Promise.reject(error);
+    }
+  );
+}
+
+
 export const postData = async (url, formData) => {
   try {
     const res = await fetch(apiUrl + url, {

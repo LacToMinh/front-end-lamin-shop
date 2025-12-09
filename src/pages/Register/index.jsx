@@ -76,87 +76,41 @@ const Register = () => {
 
     postData("/api/user/register", formFields)
       .then((res) => {
-        console.log(res);
-        if (res?.error !== true) {
+        console.log("REGISTER RESPONSE:", res); // ⬅ debug
+
+        // Trường hợp đăng ký thành công
+        if (res?.success === true) {
           setIsLoading(false);
+
           context.alertBox({
             status: "success",
-            msg: res?.message,
+            msg: res.message,
           });
+
           localStorage.setItem("userEmail", formFields.email);
-          setFormFields({
-            name: "",
-            email: "",
-            password: "",
-          });
+          setFormFields({ name: "", email: "", password: "" });
           history("/verify");
-        } else {
-          context.alertBox({
-            status: "error",
-            msg: res?.message || "Đã xảy ra lỗi",
-          });
+          return;
         }
+
+        // ❌ Trường hợp lỗi (email trùng, thiếu dữ liệu...)
+        context.alertBox({
+          status: "error",
+          msg: res?.message || "Đăng ký thất bại",
+        });
+
+        setIsLoading(false);
       })
       .catch((error) => {
+        console.error("REGISTER ERROR:", error);
         setIsLoading(false);
-      })
-      .finally(() => {
-        setIsLoading(false);
+
+        context.alertBox({
+          status: "error",
+          msg: "Không thể kết nối máy chủ",
+        });
       });
   };
-
-  // const authWithGoogle = () => {
-  //   setIsLoading(true);
-  //   signInWithPopup(auth, googleProvider)
-  //     .then((result) => {
-  //       // This gives you a Google Access Token. You can use it to access the Google API.
-  //       const credential = GoogleAuthProvider.credentialFromResult(result);
-  //       const token = credential.accessToken;
-  //       // The signed-in user info.
-  //       const user = result.user;
-
-  //       const fields = {
-  //         name: user.providerData[0].displayName,
-  //         email: user.providerData[0].email,
-  //         password: null,
-  //         avatar: user.providerData[0].photoURL,
-  //         mobile: user.providerData[0].phoneNumber,
-  //         signUpWithGoogle: true,
-  //       };
-
-  //       postData("/api/user/authWithGoogle", fields).then((res) => {
-  //         if (res.error !== true) {
-  //           setIsLoading(false);
-  //           context.alertBox({
-  //             status: success,
-  //             msg: res?.message,
-  //           });
-  //           localStorage.setItem("userEmail", fields.email);
-  //           history("/");
-  //         } else {
-  //           context.alertBox({
-  //             status: "error",
-  //             msg: res?.message,
-  //           });
-  //           setIsLoading(false);
-  //         }
-  //       });
-
-  //       console.log(user);
-  //       // IdP data available using getAdditionalUserInfo(result)
-  //       // ...
-  //     })
-  //     .catch((error) => {
-  //       // Handle Errors here.
-  //       const errorCode = error.code;
-  //       const errorMessage = error.message;
-  //       // The email of the user's account used.
-  //       const email = error.customData.email;
-  //       // The AuthCredential type that was used.
-  //       const credential = GoogleAuthProvider.credentialFromError(error);
-  //       // ...
-  //     });
-  // };
 
   const authWithGoogle = () => {
     setIsLoading(true);

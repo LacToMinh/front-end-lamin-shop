@@ -51,7 +51,10 @@ const Verify = () => {
 
             <p className="text-center mb-3 text-[15px]">
               OTP send to{" "}
-              <span className="text-black font-bold">lacminh161@gmail.com</span>
+              <span className="text-black font-bold">
+                {" "}
+                {localStorage.getItem("userEmail")}
+              </span>
             </p>
 
             <form action="" onSubmit={verifyOTP}>

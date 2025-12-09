@@ -344,50 +344,37 @@ const Orders = () => {
                         {/* Trạng thái thanh toán */}
                         {/* Trạng thái thanh toán + phương thức thanh toán */}
                         <td className="p-3">
-                          {/* MAIN BADGE */}
-                          <span
-                            className={`px-3 py-[6px] rounded-full font-semibold text-xs border 
-      ${
-        o.paymentMethod === "COD"
-          ? "bg-[rgba(250,173,20,0.15)] text-[#d48806] border-[rgba(250,173,20,0.3)]"
-          : o.payment_status === "Đã thanh toán"
-          ? "bg-[rgba(82,196,26,0.15)] text-[#237804] border-[rgba(82,196,26,0.3)]"
-          : "bg-[rgba(255,77,79,0.15)] text-[#a8071a] border-[rgba(255,77,79,0.3)]"
-      }
-    `}
-                          >
-                            {o.paymentMethod === "COD"
-                              ? "COD - Chưa thanh toán"
-                              : `${o.paymentMethod} - ${o.payment_status}`}
-                          </span>
+                          <div className="flex flex-col gap-1">
+                            {/* HÌNH THỨC THANH TOÁN */}
+                            <span
+                              className={`px-3 py-[6px] rounded-full font-semibold text-xs border
+        ${
+          o.paymentMethod === "COD"
+            ? "bg-yellow-100 text-yellow-700 border-yellow-300"
+            : o.payment_status === "Đã thanh toán"
+            ? "bg-green-100 text-green-700 border-green-300"
+            : "bg-red-100 text-red-700 border-red-300"
+        }
+      `}
+                            >
+                              {o.paymentMethod}
+                              {o.paymentType ? " – " + o.paymentType : ""}
+                            </span>
 
-                          {/* SUB LABEL */}
-                          <div className="text-[11px] text-gray-500 mt-1 italic">
-                            {/* COD */}
-                            {o.paymentMethod === "COD" &&
-                              "Thanh toán khi nhận hàng"}
-
-                            {/* MOMO */}
-                            {o.paymentMethod === "MOMO" && (
-                              <>
-                                {o.paymentType === "WALLET" &&
-                                  "MoMo – Ví điện tử"}
-                                {o.paymentType === "ATM" &&
-                                  "MoMo – Thẻ ATM nội địa"}
-                                {o.paymentType === "CC" &&
-                                  "MoMo – Thẻ tín dụng / ghi nợ"}
-                              </>
-                            )}
-
-                            {/* VNPAY */}
-                            {o.paymentMethod === "VNPAY" &&
-                              "VNPay – Thanh toán trực tuyến"}
-
-                            {/* PAYPAL */}
-                            {o.paymentMethod === "PAYPAL" && "PayPal"}
-
-                            {/* RAZORPAY */}
-                            {o.paymentMethod === "RAZORPAY" && "Razorpay"}
+                            {/* TRẠNG THÁI THANH TOÁN */}
+                            <span
+                              className={`px-3 py-[6px] rounded-full font-semibold text-xs border
+        ${
+          o.payment_status === "Đã thanh toán"
+            ? "bg-green-100 text-green-700 border-green-300"
+            : o.payment_status === "Thanh toán khi nhận hàng"
+            ? "bg-orange-100 text-orange-700 border-orange-300"
+            : "bg-gray-200 text-gray-700 border-gray-300"
+        }
+      `}
+                            >
+                              {o.payment_status}
+                            </span>
                           </div>
                         </td>
 

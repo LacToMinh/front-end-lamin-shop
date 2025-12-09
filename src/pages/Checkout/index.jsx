@@ -149,46 +149,50 @@ const Checkout = () => {
       // 🔹 Quy đổi từ VND → INR (tạm tính 1 INR = 300 VND)
       const VND_TO_INR = 300;
       const convertedAmount = Math.round(totalAmount / VND_TO_INR);
-
+      // 9872798202
       const payLoad = {
         key: VITE_APP_RAZORPAY_KEY_ID,
         amount: convertedAmount * 100, // Razorpay yêu cầu paise (1 INR = 100 paise)
         currency: "INR",
         order_receipt: "order_rcptid_" + context?.userData?.name,
-        name: "Lamin Ecommerce",
+        name: "LAMINDENIM",
         description: "Thanh toán đơn hàng từ Việt Nam",
         handler: function (res) {
-          const paymentId = res.razorpay_payment_id;
           const user = context?.userData;
 
-          const orderData = {
+          const products = context?.cartData.map((p) => ({
+            productId: p.productId,
+            quantity: p.quantity,
+          }));
+
+          const verifyData = {
             userId: user?._id,
-            products: context?.cartData,
-            paymentId: paymentId,
-            payment_status: "Đã thanh toán",
-            delivery_address: selectedValue,
+            products,
             totalAmt: totalAmount - discountAmount,
-            voucherCode: voucherCode,
-            paymentMethod: "RAZORPAY",
-            date: new Date().toLocaleString("vi-VN", {
-              month: "short",
-              day: "2-digit",
-              year: "numeric",
-            }),
+            delivery_address: selectedValue,
+            paymentId: res.razorpay_payment_id,
+            orderId: res.razorpay_order_id,
+            signature: res.razorpay_signature,
           };
 
-          postData(`/api/order/create`, orderData).then((res) => {
-            if (!res.error) {
-              context.alertBox("success", "Thanh toán thành công!");
+          postData("/api/order/razorpay/verify", verifyData).then((res) => {
+            if (res.success) {
+              context.alertBox({
+                status: "success",
+                msg: "Thanh toán thành công!",
+              });
+
               deleteData(`/api/cart/emptyCart/${user._id}`).then(() => {
                 context.getCartItems();
-                navigate("/");
+                navigate("/order/success");
               });
             } else {
-              context.alertBox("error", res.message);
+              context.alertBox({ status: "error", msg: res.message });
+              navigate("/order/failed");
             }
           });
         },
+
         theme: {
           color: "#001F5D",
         },
@@ -319,9 +323,10 @@ const Checkout = () => {
         deleteData(`/api/cart/emptyCart/${user?._id}`).then((res) => {
           context?.getCartItems();
         });
-        navigate("/my-orders");
+        navigate("/order/success");
       } else {
         context.alertBox("error", res?.message);
+        navigate("/order/failed");
       }
     });
   };

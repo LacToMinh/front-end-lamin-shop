@@ -38,6 +38,7 @@ import BlogDetail from "./pages/BlogDetail";
 import VerifyOtp from "./pages/VerifyOtpPassword";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import FailedSuccess from "./pages/Orders/failed";
 
 const alertBox = ({ status, msg }) => {
   if (status === "success") toast.success(msg);
@@ -150,6 +151,13 @@ function App() {
       }
     });
   };
+
+  useEffect(() => {
+    window.appContext = {
+      setIsLogin,
+      setUserData,
+    };
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
@@ -290,6 +298,7 @@ function App() {
           <Route path={"/my-orders"} element={<Orders />} />
           <Route path={"/order-details/:id"} element={<OrderDetails />} />
           <Route path={"/order/success"} element={<OrderSuccess />} />
+          <Route path={"/order/failed"} element={<FailedSuccess />} />
           <Route path={"/verify"} element={<Verify />} />
           <Route path={"/my-account"} element={<MyAccount />} />
           <Route path={"/my-list"} element={<MyList />} />

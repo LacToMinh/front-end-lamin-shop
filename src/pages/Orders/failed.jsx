@@ -7,7 +7,7 @@ const FailedSuccess = () => {
     <section className="w-full p-10 flex items-center justify-center flex-col">
       <img src="" alt="" />
       <span className="text-emerald-700 font-medium">
-        Thanh toán thành công — Xem đơn hàng
+        Thanh toán thất bại — Xem đơn hàng
       </span>
       <Link to="/">
         <Button>Trở về trang chủ</Button>

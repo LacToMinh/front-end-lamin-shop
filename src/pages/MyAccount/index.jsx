@@ -118,7 +118,7 @@ const MyAccount = () => {
     if (changePassword.confirmPassword !== changePassword.newPassword) {
       context.alertBox({
         status: "error",
-        msg: "New password and confirm password not match",
+        msg: res?.message,
       });
       setIsLoading2(false);
       return;
@@ -368,7 +368,7 @@ const MyAccount = () => {
           <div className="col2 w-[80%]">
             <div className="card bg-white p-5 shadow-[0_1px_8px_rgba(0,0,0,0.3)] rounded-md">
               <div className="flex items-center">
-                <h2 className="pb-3 font-medium">My Profile</h2>
+                <h2 className="pb-3 font-medium">Tài khoản của tôi</h2>
                 <Button
                   className="!mb-3 !ml-auto"
                   onClick={() =>
@@ -376,7 +376,7 @@ const MyAccount = () => {
                   }
                 >
                   <span className="text-red-600 font-semibold">
-                    Change password
+                    Đổi mật khẩu
                   </span>
                 </Button>
               </div>
@@ -439,12 +439,12 @@ const MyAccount = () => {
                         sx={{ color: "#00ED64" }}
                       />
                     ) : (
-                      <span className="!text-white font-semibold">Update</span>
+                      <span className="!text-white font-semibold">Cập nhật</span>
                     )}
                   </Button>
-                  <Button className="!bg-red-600">
+                  {/* <Button className="!bg-red-600">
                     <span className="!text-white font-semibold">Cancel</span>
-                  </Button>
+                  </Button> */}
                 </div>
               </form>
             </div>
@@ -453,7 +453,7 @@ const MyAccount = () => {
               <Collapse isOpened={isChangePasswordFromShow}>
                 <div className="mt-5 bg-white p-5 shadow-[0_1px_8px_rgba(0,0,0,0.3)] rounded-md transition-all ease-in-out duration-1000 delay-75">
                   <div className="flex items-center pb-3">
-                    <h2 className="pb-0 font-medium">Change password</h2>
+                    <h2 className="pb-0 font-medium">Đổi mật khẩu</h2>
                   </div>
                   <hr />
 
@@ -516,15 +516,15 @@ const MyAccount = () => {
                           />
                         ) : (
                           <span className="!text-white font-semibold">
-                            Change Password
+                            Cập nhật
                           </span>
                         )}
                       </Button>
-                      <Button className="!bg-red-600">
+                      {/* <Button className="!bg-red-600">
                         <span className="!text-white font-semibold">
                           Cancel
                         </span>
-                      </Button>
+                      </Button> */}
                     </div>
                   </form>
                 </div>
